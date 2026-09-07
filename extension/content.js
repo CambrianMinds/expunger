@@ -1,11 +1,52 @@
-/**
- * Indiana Expungement Assistant - Content Script
- * Runs in the context of public.courts.in.gov/mycase/* pages.
- * 
- * Scrapes case data directly from the DOM and Knockout.js observables.
- * All parsing is done 100% client-side within the user's authenticated session.
- * No external HTTP requests — zero bot-detection footprint.
- */
+// ─── Odyssey Network Interception (MAIN Execution World) ───────────
+if (typeof window !== 'undefined' && !window._odysseyInterceptionActive) {
+  window._odysseyInterceptionActive = true;
+  window._odysseyDataInterceptedCache = window._odysseyDataInterceptedCache || new Map();
+
+  const _origFetch = window.fetch;
+  if (_origFetch) {
+    window.fetch = async function (...args) {
+      const response = await _origFetch.apply(window, args);
+      try {
+        const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+        if (url && (url.includes('/Case/') || url.includes('CaseSummary') || url.includes('CaseSearch') || url.includes('PrintCCS'))) {
+          const clone = response.clone();
+          clone.json().then(data => {
+            if (data) {
+              window._odysseyDataInterceptedCache.set(url, data);
+              window.dispatchEvent(new CustomEvent('OdysseyDataIntercepted', { detail: { url, data } }));
+            }
+          }).catch(() => {});
+        }
+      } catch (e) {}
+      return response;
+    };
+  }
+
+  if (typeof XMLHttpRequest !== 'undefined' && XMLHttpRequest.prototype.open) {
+    const _origOpen = XMLHttpRequest.prototype.open;
+    const _origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+      this._interceptUrl = url;
+      return _origOpen.call(this, method, url, ...rest);
+    };
+    XMLHttpRequest.prototype.send = function (...args) {
+      this.addEventListener('load', () => {
+        try {
+          const url = this._interceptUrl || '';
+          if (url && (url.includes('/Case/') || url.includes('CaseSummary') || url.includes('CaseSearch') || url.includes('PrintCCS'))) {
+            const data = JSON.parse(this.responseText);
+            if (data) {
+              window._odysseyDataInterceptedCache.set(url, data);
+              window.dispatchEvent(new CustomEvent('OdysseyDataIntercepted', { detail: { url, data } }));
+            }
+          }
+        } catch (e) {}
+      });
+      return _origSend.apply(this, args);
+    };
+  }
+}
 
 const MyCaseScraper = (() => {
 
@@ -241,9 +282,7 @@ const MyCaseScraper = (() => {
   /**
    * Fetch the Chronological Case Summary (CCS) for a specific case.
    * Uses the user's existing session cookies — no external authentication.
-   * 
-   * This performs a same-origin fetch within the user's browser session,
-   * which is indistinguishable from the user clicking a case link.
+   * Checks network interception cache first, falls back to direct API and ROA print view.
    * 
    * @param {string} caseToken - The CaseToken identifier from search results
    * @returns {Promise<Object>} Parsed CCS data
@@ -251,9 +290,20 @@ const MyCaseScraper = (() => {
   async function fetchCCS(caseToken) {
     if (!caseToken) return null;
 
+    // Stage 1 Check: Intercepted Network Cache (Fast-path off the wire)
+    if (typeof window !== 'undefined' && window._odysseyDataInterceptedCache) {
+      for (const [cachedUrl, cachedPayload] of window._odysseyDataInterceptedCache.entries()) {
+        if (cachedUrl.includes(caseToken) && cachedPayload) {
+          console.log(`[Expungement] Serving CCS for ${caseToken} from intercepted network cache`);
+          return parseCCSJson(cachedPayload);
+        }
+      }
+    }
+
+    // Stage 2: Direct Authenticated Session Fetch
     try {
       const url = `https://public.courts.in.gov/mycase/Case/CaseSummary?SRCT=&CaseToken=${encodeURIComponent(caseToken)}&_=${Date.now()}`;
-      const response = await fetch(url, {
+      let response = await fetch(url, {
         method: 'GET',
         credentials: 'same-origin',
         headers: {
@@ -262,6 +312,19 @@ const MyCaseScraper = (() => {
           'X-Requested-With': 'XMLHttpRequest'
         }
       });
+
+      // Stage 3 Fallback: Consolidated Register of Actions (ROA) Report route if primary endpoint is restricted
+      if (!response.ok || response.status === 404) {
+        const roaUrl = `https://public.courts.in.gov/mycase/Case/CaseSummaryReport?SRCT=&CaseToken=${encodeURIComponent(caseToken)}&_=${Date.now()}`;
+        response = await fetch(roaUrl, {
+          method: 'GET',
+          credentials: 'same-origin',
+          headers: {
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        }).catch(() => response);
+      }
 
       if (!response.ok) {
         console.warn(`[Expungement] CCS fetch failed for ${caseToken}: ${response.status}`);
@@ -279,13 +342,20 @@ const MyCaseScraper = (() => {
 
   /**
    * Parse CCS JSON response to extract detailed charge information, disposition details,
-   * financial summary, and docket entries from the MyCase API.
+   * financial ledger, restitution milestones, and sentence discharge events.
    */
   function parseCCSJson(json) {
     const ccsData = {
       charges: [],
       docketEntries: [],
       financialSummary: null,
+      financials: {
+        balanceDue: 0,
+        balanceFormatted: '$0.00',
+        restitutionOrdered: false,
+        restitutionSatisfied: true,
+        sentenceCompletedDate: null
+      },
       arrestingAgency: null,
       sentenceDetails: null,
       dispositionDate: ''
@@ -296,14 +366,11 @@ const MyCaseScraper = (() => {
       json.Charges.forEach(charge => {
         let offense = charge.OffenseDescription || '';
 
-        // For old converted cases, OffenseDescription is the useless placeholder
-        // "SEE CCS ENTRY FOR OFFENSE DESCRIPTION". The real offense text is buried
-        // in the CCS Events array inside CaseEvent.Comment fields like:
-        //   "COUNT 1 75/55 SPEED X I  (RJO? N) | JTS Minute Entry Date: ..."
+        // For old converted cases, OffenseDescription is the placeholder
+        // "SEE CCS ENTRY FOR OFFENSE DESCRIPTION". Resolve from Events.
         if (offense.toUpperCase().includes('SEE CCS ENTRY') && Array.isArray(json.Events)) {
           const chargeNum = charge.ChargeNumber || '01';
 
-          // First pass: look for a COUNT comment matching this charge number
           for (const evt of json.Events) {
             if (evt.CaseEvent && evt.CaseEvent.Comment) {
               const comment = evt.CaseEvent.Comment;
@@ -316,7 +383,6 @@ const MyCaseScraper = (() => {
             }
           }
 
-          // Second pass: if still placeholder, try any COUNT pattern
           if (offense.toUpperCase().includes('SEE CCS ENTRY')) {
             for (const evt of json.Events) {
               if (evt.CaseEvent && evt.CaseEvent.Comment) {
@@ -330,7 +396,6 @@ const MyCaseScraper = (() => {
             }
           }
 
-          // Third pass: use the first non-calendar event comment as a description
           if (offense.toUpperCase().includes('SEE CCS ENTRY')) {
             for (const evt of json.Events) {
               if (evt.CaseEvent && evt.CaseEvent.Comment) {
@@ -357,9 +422,33 @@ const MyCaseScraper = (() => {
       });
     }
 
-    // Extract disposition info from disposition events
+    // Extract disposition info, restitution milestones, and sentence discharge from events
+    let hasRestitutionOrder = false;
+    let hasRestitutionSatisfaction = false;
+    let sentenceDischargeDate = null;
+
     if (Array.isArray(json.Events)) {
       json.Events.forEach(evt => {
+        const evtDesc = (evt.Description || '').toUpperCase();
+        const comment = (evt.CaseEvent?.Comment || '').toUpperCase();
+        const combinedText = `${evtDesc} ${comment}`;
+
+        // Audit for restitution ordered
+        if (combinedText.includes('RESTITUTION') || combinedText.includes('RESTITUTION ORDERED')) {
+          hasRestitutionOrder = true;
+        }
+        // Audit for restitution satisfied or receipted
+        if (combinedText.includes('RESTITUTION SATISFACTION') || combinedText.includes('RESTITUTION PAID') || combinedText.includes('SATISFACTION OF JUDGMENT')) {
+          hasRestitutionSatisfaction = true;
+        }
+
+        // Audit for true sentence completion (probation discharge, commitment terminated)
+        if (combinedText.includes('PROBATION DISCHARGED') || combinedText.includes('COMMITMENT TERMINATED') || combinedText.includes('SENTENCE SATISFIED') || combinedText.includes('RELEASED FROM PROBATION')) {
+          if (evt.EventDate && !sentenceDischargeDate) {
+            sentenceDischargeDate = evt.EventDate;
+          }
+        }
+
         if (evt.DispEvent) {
           if (evt.EventDate && !ccsData.dispositionDate) {
             ccsData.dispositionDate = evt.EventDate;
@@ -374,12 +463,8 @@ const MyCaseScraper = (() => {
             });
           }
         }
-      });
-    }
 
-    // Extract docket entries from events
-    if (Array.isArray(json.Events)) {
-      json.Events.forEach(evt => {
+        // Docket entries
         ccsData.docketEntries.push({
           date: evt.EventDate || '',
           type: evt.EventType || '',
@@ -389,17 +474,32 @@ const MyCaseScraper = (() => {
       });
     }
 
-    // Extract financial summary from the defendant party
+    // Extract and audit financial fee summary from defendant party
+    let balanceDueNum = 0;
+    let balanceStr = '$0.00';
+
     if (Array.isArray(json.Parties)) {
-      const defendant = json.Parties.find(p => p.BaseConnKey === 'DF');
+      const defendant = json.Parties.find(p => p.BaseConnKey === 'DF') || json.Parties[0];
       if (defendant && defendant.FeeSummary) {
+        balanceStr = defendant.FeeSummary.Balance || '$0.00';
+        const parsedNum = parseFloat(String(balanceStr).replace(/[^0-9.-]+/g, ''));
+        balanceDueNum = isNaN(parsedNum) ? 0 : parsedNum;
+
         ccsData.financialSummary = {
-          balance: defendant.FeeSummary.Balance || 'N/A',
+          balance: balanceStr,
           asOf: defendant.FeeSummary.AsOf || '',
           categories: defendant.FeeSummary.Categories || []
         };
       }
     }
+
+    ccsData.financials = {
+      balanceDue: balanceDueNum,
+      balanceFormatted: balanceStr,
+      restitutionOrdered: hasRestitutionOrder,
+      restitutionSatisfied: hasRestitutionOrder ? (hasRestitutionSatisfaction && balanceDueNum <= 0) : true,
+      sentenceCompletedDate: sentenceDischargeDate
+    };
 
     return ccsData;
   }
@@ -410,7 +510,7 @@ const MyCaseScraper = (() => {
    * 
    * @param {Array} cases - Array of case objects with caseToken
    * @param {Function} onProgress - Callback for progress updates
-   * @returns {Promise<Array>} Cases enriched with CCS data
+   * @returns {Promise<Array>} Cases enriched with CCS data and financial audit
    */
   async function deepScrapeCCS(cases, onProgress) {
     const enriched = [];
@@ -421,14 +521,15 @@ const MyCaseScraper = (() => {
 
         const ccs = await fetchCCS(c.caseToken);
         const dispositionDate = c.dispositionDate || ccs?.dispositionDate || '';
-        enriched.push({ ...c, dispositionDate, ccs });
+        const financials = ccs?.financials || { balanceDue: 0, balanceFormatted: '$0.00', restitutionSatisfied: true };
+        enriched.push({ ...c, dispositionDate, ccs, financials });
 
         // Natural delay: 800–1500ms between requests (mimics human pace)
         if (i < cases.length - 1) {
           await sleep(800 + Math.random() * 700);
         }
       } else {
-        enriched.push({ ...c, ccs: null });
+        enriched.push({ ...c, ccs: null, financials: { balanceDue: 0, balanceFormatted: '$0.00', restitutionSatisfied: true } });
       }
     }
     return enriched;

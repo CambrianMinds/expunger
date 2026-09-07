@@ -861,6 +861,18 @@ function createCaseCard(caseData) {
           ${el.warnings.map(w => `<span class="warning-tag">⚠ ${escapeHtml(w)}</span>`).join('')}
         </div>
       ` : ''}
+      ${(caseData.financials?.balanceDue > 0 || caseData.ccs?.financials?.balanceDue > 0) ? `
+        <div class="financial-warning-box" style="background:rgba(220,38,38,0.08); border-left:3px solid #dc2626; padding:8px 12px; margin-top:8px; border-radius:4px; font-size:0.75rem;">
+          <strong style="color:#dc2626;">⚠️ UNPAID COURT BALANCE: $${(caseData.financials?.balanceDue || caseData.ccs?.financials?.balanceDue || 0).toFixed(2)}</strong>
+          <p style="margin:2px 0 0 0; color:var(--text-secondary);">Under Indiana Code § 35-38-9, all fines, fees, and restitution must be paid in full before an expungement petition can be granted.</p>
+        </div>
+      ` : ''}
+      ${((caseData.financials?.restitutionOrdered && !caseData.financials?.restitutionSatisfied) || (caseData.ccs?.financials?.restitutionOrdered && !caseData.ccs?.financials?.restitutionSatisfied)) ? `
+        <div class="financial-warning-box" style="background:rgba(217,119,6,0.08); border-left:3px solid #d97706; padding:8px 12px; margin-top:8px; border-radius:4px; font-size:0.75rem;">
+          <strong style="color:#d97706;">⚠️ RESTITUTION ORDER DETECTED</strong>
+          <p style="margin:2px 0 0 0; color:var(--text-secondary);">Verify that a formal Satisfaction of Restitution or clerk payment receipt is on file prior to filing.</p>
+        </div>
+      ` : ''}
     </div>
   `;
 

@@ -483,9 +483,29 @@
       });
     }
 
-    // Extract docket entries from events
+    // Extract docket entries and audit restitution & sentence milestones from events
+    let hasRestitutionOrder = false;
+    let hasRestitutionSatisfaction = false;
+    let sentenceDischargeDate = null;
+
     if (Array.isArray(json.Events)) {
       json.Events.forEach(evt => {
+        const evtDesc = (evt.Description || '').toUpperCase();
+        const comment = (evt.CaseEvent?.Comment || '').toUpperCase();
+        const combinedText = `${evtDesc} ${comment}`;
+
+        if (combinedText.includes('RESTITUTION') || combinedText.includes('RESTITUTION ORDERED')) {
+          hasRestitutionOrder = true;
+        }
+        if (combinedText.includes('RESTITUTION SATISFACTION') || combinedText.includes('RESTITUTION PAID') || combinedText.includes('SATISFACTION OF JUDGMENT')) {
+          hasRestitutionSatisfaction = true;
+        }
+        if (combinedText.includes('PROBATION DISCHARGED') || combinedText.includes('COMMITMENT TERMINATED') || combinedText.includes('SENTENCE SATISFIED') || combinedText.includes('RELEASED FROM PROBATION')) {
+          if (evt.EventDate && !sentenceDischargeDate) {
+            sentenceDischargeDate = evt.EventDate;
+          }
+        }
+
         ccsData.docketEntries.push({
           date: evt.EventDate || '',
           type: evt.EventType || '',
@@ -495,17 +515,32 @@
       });
     }
 
-    // Extract financial summary from the defendant party
+    // Extract financial fee summary from defendant party
+    let balanceDueNum = 0;
+    let balanceStr = '$0.00';
+
     if (Array.isArray(json.Parties)) {
-      const defendant = json.Parties.find(p => p.BaseConnKey === 'DF');
+      const defendant = json.Parties.find(p => p.BaseConnKey === 'DF') || json.Parties[0];
       if (defendant && defendant.FeeSummary) {
+        balanceStr = defendant.FeeSummary.Balance || '$0.00';
+        const parsedNum = parseFloat(String(balanceStr).replace(/[^0-9.-]+/g, ''));
+        balanceDueNum = isNaN(parsedNum) ? 0 : parsedNum;
+
         ccsData.financialSummary = {
-          balance: defendant.FeeSummary.Balance || 'N/A',
+          balance: balanceStr,
           asOf: defendant.FeeSummary.AsOf || '',
           categories: defendant.FeeSummary.Categories || []
         };
       }
     }
+
+    ccsData.financials = {
+      balanceDue: balanceDueNum,
+      balanceFormatted: balanceStr,
+      restitutionOrdered: hasRestitutionOrder,
+      restitutionSatisfied: hasRestitutionOrder ? (hasRestitutionSatisfaction && balanceDueNum <= 0) : true,
+      sentenceCompletedDate: sentenceDischargeDate
+    };
 
     return ccsData;
   }

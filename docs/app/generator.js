@@ -214,6 +214,21 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         if (!confirm(warningMsg)) {
           return;
         }
+    // Audit for unpaid restitution or court balance due (IC § 35-38-9 requirement)
+    const casesWithUnpaidFees = casesForValidation.filter(c => {
+      const bal = c.financials?.balanceDue || c.ccs?.financials?.balanceDue || 0;
+      return bal > 0;
+    });
+
+    if (casesWithUnpaidFees.length > 0) {
+      const totalUnpaid = casesWithUnpaidFees.reduce((sum, c) => sum + (c.financials?.balanceDue || c.ccs?.financials?.balanceDue || 0), 0);
+      const feeWarning = `⚠️ MANDATORY STATUTORY AUDIT WARNING:\n\n` +
+        `Our audit detected an outstanding court balance or unpaid restitution of $${totalUnpaid.toFixed(2)} on case(s): ` +
+        `${casesWithUnpaidFees.map(c => c.case_number).join(', ')}.\n\n` +
+        `Under Indiana Code § 35-38-9, a court cannot grant an expungement unless all fines, fees, and restitution are fully paid. In your petition, you must affirm under penalty of perjury that all court obligations are satisfied.\n\n` +
+        `Do you still wish to proceed with generating this packet?`;
+      if (!confirm(feeWarning)) {
+        return;
       }
     }
 
