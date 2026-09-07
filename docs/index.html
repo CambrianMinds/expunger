@@ -86,8 +86,8 @@
 
       <div class="nav-actions">
         <!-- Pro Suite Button for Legal Aid Organizations and Law Firms -->
-        <a href="https://cambrianminds.github.io/indiana-expunge-pro/" target="_blank"
-          rel="noopener noreferrer" class="nav-pro-btn" title="Legal Aid &amp; Defense Practice Pro Suite (IC § 35-38-9)">
+        <a href="https://cambrianminds.github.io/indiana-expunge-pro/" target="_blank" rel="noopener noreferrer"
+          class="nav-pro-btn" title="Legal Aid &amp; Defense Practice Pro Suite (IC § 35-38-9)">
           <span class="pro-icon">⚖️</span>
           <span>Pro Suite</span>
           <span class="pro-arrow" aria-hidden="true">↗</span>
@@ -148,16 +148,32 @@
 
       <div class="hero-cta-row">
         <a href="app/app.html" class="btn btn-primary hero-btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
           <span>Launch Web App (No Install Needed)</span>
           <span class="btn-arrow" aria-hidden="true">➔</span>
         </a>
         <a href="#assessment" class="btn btn-secondary" data-i18n="btn_check_eligibility">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
           <span>Check Your Statutory Eligibility</span>
         </a>
         <a href="#workflow" class="btn btn-secondary" data-i18n="btn_how_to_prepare">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
           <span>How to Prepare Your Petition</span>
         </a>
       </div>
@@ -165,7 +181,8 @@
       <div class="hero-trust-bar">
         <div class="trust-item">
           <h3 class="trust-num" data-i18n="feat_1_title">100% Private</h3>
-          <p class="trust-label" data-i18n="feat_1_desc">All processing executes locally in your browser — zero tracking, zero logs</p>
+          <p class="trust-label" data-i18n="feat_1_desc">All processing executes locally in your browser — zero
+            tracking, zero logs</p>
         </div>
         <div class="trust-item">
           <h3 class="trust-num">$0 to Use</h3>
@@ -173,7 +190,8 @@
         </div>
         <div class="trust-item">
           <h3 class="trust-num" data-i18n="feat_3_title">10 Court Pleadings</h3>
-          <p class="trust-label" data-i18n="feat_3_desc">Complete petition packet formatted pursuant to Indiana Trial Rules</p>
+          <p class="trust-label" data-i18n="feat_3_desc">Complete petition packet formatted pursuant to Indiana Trial
+            Rules</p>
         </div>
       </div>
     </div>
@@ -846,81 +864,6 @@
     </div>
   </section>
 
-  <!-- Section 6½: Technical Architecture -->
-  <section class="section" id="tech">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-kicker">Under the Hood</span>
-        <h2 class="section-title">Technical Architecture</h2>
-        <p class="section-lead">
-          Every component runs client-side in your browser. No server ever touches your data.
-        </p>
-      </div>
-
-      <div class="tech-grid">
-
-        <div class="tech-card">
-          <div class="tech-card-icon">🔍</div>
-          <h3>Knockout.js Observable Scraping</h3>
-          <p>The content script reads Indiana MyCase's Knockout.js view-model directly from <code>ko.dataFor()</code> on the rendered DOM — bypassing brittle CSS selector scraping entirely. The Odyssey portal binds every case, charge, and disposition event into a reactive observable tree. By reading that observable model in-memory, the tool is far more resilient to minor template re-renders than any selector-based approach.</p>
-          <p>When the KO model is unavailable (e.g., a non-Knockout page element), the scanner falls back to a structured DOM traversal using stable ARIA roles and data attributes, then falls back again to a CCS <code>fetch()</code> call with <code>credentials: 'same-origin'</code> and a 800–1500 ms jitter delay to retrieve case detail JSON from the Odyssey public API.</p>
-          <code class="tech-code">ko.dataFor(document.querySelector('[data-bind]'))</code>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">⚖️</div>
-          <h3>IC § 35-38-9 Statutory Decision Engine</h3>
-          <p>The <code>eligibility.js</code> rules engine is a self-contained IIFE (no ES module imports) that evaluates each case against all five statutory tiers — IC §§ 35-38-9-1 through 35-38-9-5. It computes exact integer day counts from conviction/sentencing dates, applies per-tier mandatory vs. discretionary standards, enforces statutory disqualifications (violent offenses, sex offenders, public servants), and runs the cross-county 365-day consolidation safety check under IC § 35-38-9-9(d).</p>
-          <p>Section 1 non-conviction records (arrests, dismissals, acquittals) are explicitly decoupled from the 365-day multi-county consolidation clock — as the clock governs only conviction tiers. The engine is tested with 20 automated Jest assertions covering edge cases including leap years and boundary conditions.</p>
-          <code class="tech-code">assessEligibility(caseType, convDate, charges, priorExpungements)</code>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">📄</div>
-          <h3>In-Browser PDF Generation (pdf-lib)</h3>
-          <p>All 10 court pleadings are assembled client-side using the vendored <code>pdf-lib.min.js</code> library — no server, no upload, no cloud rendering. The PDF context engine (<code>pdf-generator.js</code>) enforces Indiana Trial Rule 10 formatting constraints: 8.5×11 in (612×792 pt), 1-inch margins, 12 pt minimum font size, Times New Roman/Georgia families, double-spaced body text, single-spaced tables, and page numbers bottom-center.</p>
-          <p>Interactive fillable form fields are embedded using pdf-lib's <code>PDFAcroForm</code> API so petitioners can type directly into the PDF before printing — eliminating hand-correction errors on formal pleadings.</p>
-          <code class="tech-code">const pdfDoc = await PDFDocument.create(); // vendored pdf-lib</code>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">🏛️</div>
-          <h3>Bifurcated DOC 07 Relief (Mixed Batches)</h3>
-          <p>When a petition contains both IC § 35-38-9-1 non-convictions and conviction-tier records in the same county, the Proposed Order (DOC 07) cleanly bifurcates relief into two separate statutory subsections. Section 1 records receive mandatory redaction and sealing with no civil rights restoration references (civil rights were never lost). Conviction records receive IC §§ 35-38-9-6/7 statutory access restrictions and explicit civil rights restoration under IC § 35-38-9-10. The lifetime one-shot finding under IC § 35-38-9-9(i) is only included when conviction tiers are present.</p>
-          <p>Courts reject blanket orders that apply conviction-level restrictions to dismissed charges, or that purport to restore civil rights for non-conviction records. Bifurcation eliminates this as a rejection vector.</p>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">📋</div>
-          <h3>Prior Cause Number & Multi-County Consolidation</h3>
-          <p>When a petitioner has already filed in one county and is now filing in a second county within the 365-day window (IC § 35-38-9-9(d)), the UI captures the prior filing date, county, and optionally the prior XP cause number (e.g., <code>49D01-2501-XP-000123</code>). This data is injected as affirmative statutory averments into DOC 04 (Verified Petition) and DOC 05 (Prosecutor Notice) — transforming an unverified claim into an instantly auditable Odyssey docket reference. Prosecutors can verify the prior filing within seconds, avoiding defensive motions for clarification.</p>
-          <p>The 365-day clock uses exact integer day arithmetic — not month arithmetic — to prevent leap-year edge cases from inadvertently expiring a valid consolidation window. Indiana Trial Rule 6(A) rollover warnings trigger automatically when fewer than 14 days remain.</p>
-          <code class="tech-code">Math.floor((today - priorDate) / (1000 * 60 * 60 * 24)) &le; 365</code>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">📮</div>
-          <h3>Form 06 Service Method Selector</h3>
-          <p>DOC 06 (Certificate of Service) pre-marks the correct service method checkbox (<code>[X]</code>) based on the petitioner's selection: Indiana Odyssey E-Filing System (IEFS), Certified Mail (Return Receipt Requested), or First Class U.S. Mail / Hand Delivery. Pro se filers frequently file through IEFS while leaving paper mail checkboxes ticked, creating an ambiguous certificate of service record. The synchronized selector closes this gap between Indiana Trial Rule 5 requirements and actual filing method.</p>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">🔒</div>
-          <h3>Zero-Server Privacy Architecture</h3>
-          <p>There is no backend. No API. No cloud function. All scraping, eligibility analysis, PDF compilation, and form generation executes entirely inside the user's browser tab using native Web APIs and the vendored pdf-lib library. Petitioner PII (SSN, DOB, DL#, 10-year address history) is persisted in <code>chrome.storage.local</code> (extension) or <code>localStorage</code> (web app) — never transmitted anywhere. The content script's CCS fetcher uses <code>credentials: 'same-origin'</code> exclusively, ensuring no credentials leak outside the user's active MyCase session.</p>
-        </div>
-
-        <div class="tech-card">
-          <div class="tech-card-icon">🧪</div>
-          <h3>Automated Test Suite & Dual-Tree Parity</h3>
-          <p>The codebase maintains two parallel source trees — <code>extension/sidepanel/</code> (Chrome Manifest V3) and <code>docs/app/</code> (standalone web app) — that must remain identical for all shared modules. A dedicated <code>scripts/check-parity.js</code> script enforces byte-exact equality between both <code>pdf-generator.js</code> trees as part of <code>npm test</code>. The Jest suite covers 20 statutory eligibility assertions including Section 1 decoupling, cross-county blocking, leap year boundaries, and disqualification edge cases. All tests run in under 600ms.</p>
-          <code class="tech-code">npm test  # jest + check-parity + check-i18n + check-disclaimers</code>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <!-- Section 6: Frequently Asked Questions (FAQ) -->
   <section class="section section-alt" id="faq">
     <div class="container">
@@ -1049,7 +992,8 @@
           </summary>
           <div class="faq-answer">
             <p>
-              <strong>Never.</strong> The entire assistant runs 100% locally in your browser. The tool parses public records directly from your active MyCase session, and all 10 PDF court forms are
+              <strong>Never.</strong> The entire assistant runs 100% locally in your browser. The tool parses public
+              records directly from your active MyCase session, and all 10 PDF court forms are
               compiled on your machine using <code>pdf-lib</code>.
             </p>
             <p>
@@ -1069,10 +1013,15 @@
           </summary>
           <div class="faq-answer">
             <p>
-              <strong>Yes, it is strongly recommended.</strong> While MyCase contains most public court records, relying solely on it can be risky. Under <strong>IC § 35-38-9-9(i)</strong>, you only have <strong>one lifetime opportunity</strong> to file for conviction expungement.
+              <strong>Yes, it is strongly recommended.</strong> While MyCase contains most public court records, relying
+              solely on it can be risky. Under <strong>IC § 35-38-9-9(i)</strong>, you only have <strong>one lifetime
+                opportunity</strong> to file for conviction expungement.
             </p>
             <p>
-              If a case was archived, expunged previously but incorrectly recorded, or originated in a county before they transitioned to MyCase, it might not appear in a standard search. We strongly recommend obtaining an official <strong>Indiana State Police (ISP) Criminal History Background Check</strong> to ensure absolutely every charge is accounted for before generating your final packet.
+              If a case was archived, expunged previously but incorrectly recorded, or originated in a county before
+              they transitioned to MyCase, it might not appear in a standard search. We strongly recommend obtaining an
+              official <strong>Indiana State Police (ISP) Criminal History Background Check</strong> to ensure
+              absolutely every charge is accounted for before generating your final packet.
             </p>
           </div>
         </details>
