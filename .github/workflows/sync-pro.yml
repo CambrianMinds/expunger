@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'CambrianMinds/indiana-expunge-pro'
-          token: ${{ secrets.SYNC_PAT || github.token }}
+          token: ${{ secrets['SYNC_PAT'] || github.token }}
           path: pro
 
       - name: Setup Node.js
@@ -50,7 +50,7 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git add eligibility.js county-directory.js pdf-lib.min.js
             git commit -m "sync: automated statutory core update from indiana-expungement-assistant (${{ github.sha }})"
-            git push origin main
+            git push origin main || echo "::warning::Push to indiana-expunge-pro failed. Add a GitHub Personal Access Token (with repo scope) as secret 'SYNC_PAT' in Repository Settings -> Secrets and variables -> Actions."
           else
             echo "No statutory core changes to push to indiana-expunge-pro."
           fi
