@@ -774,8 +774,22 @@ function buildForm04(ctx, payload) {
   ctx.drawBullet('No criminal charges are currently pending against Petitioner in any state or federal court.');
   ctx.drawBullet('Petitioner has paid all court costs, fines, administrative fees, probation fees, and restitution ordered by the Court.');
   ctx.drawBullet('Petitioner has successfully completed all terms of probation, incarceration, and community supervision.');
-  ctx.drawBullet('Petitioner has never previously filed a petition for conviction expungement in Indiana (One-Shot Rule compliance).');
-  ctx.drawBullet('All other petitions in other Indiana counties (if any) have been or will be filed within 365 days (IC § 35-38-9-9(d)).');
+  if (payload.priorFiling && payload.priorFiling.hasPrior && payload.priorFiling.county && payload.priorFiling.date) {
+    const priorDateObj = new Date(payload.priorFiling.date + 'T00:00:00');
+    const priorDateStr = !isNaN(priorDateObj.getTime())
+      ? priorDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : payload.priorFiling.date;
+    ctx.drawBullet(
+      `Petitioner previously filed a petition for expungement in ${payload.priorFiling.county} County on ` +
+      `${priorDateStr}, and this petition is timely submitted within the 365-day consolidation period prescribed by IC § 35-38-9-9(d).`
+    );
+    ctx.drawBullet(
+      'Petitioner has never previously filed a petition for conviction expungement in Indiana other than the timely consolidated filing disclosed herein (IC § 35-38-9-9(d) & (i)).'
+    );
+  } else {
+    ctx.drawBullet('Petitioner has never previously filed a petition for conviction expungement in Indiana (One-Shot Rule compliance).');
+    ctx.drawBullet('All other petitions in other Indiana counties (if any) have been or will be filed within 365 days (IC § 35-38-9-9(d)).');
+  }
 
   ctx.drawHeading('5. Prayer for Relief:');
   ctx.drawDoubleSpacedParagraph(
@@ -808,6 +822,17 @@ function buildForm05(ctx, payload) {
     `PLEASE TAKE NOTICE that on this date, Petitioner, ${name}, filed a Verified Petition for ` +
     `Expungement of Arrest and Conviction Records pursuant to Indiana Code § 35-38-9 in the above-captioned Court.`
   );
+  if (payload.priorFiling && payload.priorFiling.hasPrior && payload.priorFiling.county && payload.priorFiling.date) {
+    const priorDateObj = new Date(payload.priorFiling.date + 'T00:00:00');
+    const priorDateStr = !isNaN(priorDateObj.getTime())
+      ? priorDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : payload.priorFiling.date;
+    ctx.drawDoubleSpacedParagraph(
+      `STATUTORY CROSS-COUNTY DISCLOSURE (IC § 35-38-9-9(d)): Petitioner hereby affirmatively discloses ` +
+      `that a related petition for expungement was previously filed in ${payload.priorFiling.county} County on ` +
+      `${priorDateStr}. The within petition is timely filed within the 365-day statutory consolidation period.`
+    );
+  }
   ctx.drawDoubleSpacedParagraph(
     'Pursuant to Indiana Code § 35-38-9-8(e), the Prosecuting Attorney has thirty (30) days from service ' +
     'of this Notice to file an Answer, Response, or Objection to the Petition for Expungement.'

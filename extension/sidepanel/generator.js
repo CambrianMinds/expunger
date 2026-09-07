@@ -96,6 +96,21 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
     });
   });
 
+  // Prior Filings County Population
+  export function populatePriorFilingCounties() {
+    const select = $('#priorFilingCounty');
+    if (!select || select.options.length > 1) return;
+    const counties = (typeof window !== 'undefined' && window.IndianaExpungement?.INDIANA_COUNTIES)
+      ? Object.values(window.IndianaExpungement.INDIANA_COUNTIES).sort()
+      : [];
+    counties.forEach(countyName => {
+      const opt = document.createElement('option');
+      opt.value = countyName;
+      opt.textContent = `${countyName} County`;
+      select.appendChild(opt);
+    });
+  }
+
   // Prior Filings Radio Listeners
   document.querySelectorAll('input[name="hasPriorFiling"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
@@ -103,6 +118,7 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       if (box) {
         box.style.display = e.target.value === 'yes' ? 'block' : 'none';
       }
+      populatePriorFilingCounties();
     });
   });
 
@@ -120,38 +136,75 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       return;
     }
     
-    if (AppState.currentReport.crossCountyBlock) {
+    if (AppState.currentReport.crossCountyBlock && AppState.currentReport.crossCountyBlock.isSafe === false) {
       showToast('Cannot generate: Multi-county petitions must be filed within 365 days of each other (IC § 35-38-9-9(d)). Adjust dates or exclude cases.', 'error', 6000);
       return;
     }
 
-    // Prior Filings 365-Day Enforcement
-    const priorFilingYes = document.querySelector('input[name="hasPriorFiling"]:checked')?.value === 'yes';
-    if (priorFilingYes) {
-      const priorDateStr = $('#priorFilingDate')?.value;
-      if (!priorDateStr) {
-        showToast('Please enter the date of your prior county expungement filing.', 'error');
-        return;
-      }
-      const priorDate = new Date(priorDateStr);
-      const today = new Date();
-      const diffTime = today.getTime() - priorDate.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
-      
-      if (diffDays < 0) {
-        showToast('Prior filing date cannot be in the future.', 'error');
-        return;
-      }
-      
-      if (diffDays > 365) {
-        showToast('Cannot generate: Your 365-day window to file in multiple counties has expired (IC § 35-38-9-9(d)).', 'error', 7000);
-        return;
-      }
-      
-      // Calculate remaining days for warning
-      const daysRemaining = 365 - diffDays;
-      if (!confirm(`WARNING: You have exactly ${daysRemaining} days remaining to file this packet with the clerk to comply with the 365-day rule. Proceed?`)) {
-        return;
+    // Determine target county and active cases for statutory validation
+    const countySelectCard = $('#countySelectCard');
+    const countySelectDropdown = $('#selectCountyPacket');
+    const selectedCountyCode = (countySelectCard?.style.display !== 'none' && countySelectDropdown?.value)
+      ? countySelectDropdown.value
+      : null;
+
+    let targetCountyCheck = null;
+    if (selectedCountyCode && AppState.currentReport.counties[selectedCountyCode]) {
+      targetCountyCheck = AppState.currentReport.counties[selectedCountyCode];
+    } else {
+      targetCountyCheck = Object.values(AppState.currentReport.counties)[0];
+    }
+
+    const casesForValidation = targetCountyCheck ? targetCountyCheck.cases : AppState.currentCases;
+    const eligibleCasesForValidation = casesForValidation.filter(c => c.eligibility?.eligible);
+    const hasConvictionTiers = eligibleCasesForValidation.some(c => c.eligibility?.statute && c.eligibility.statute !== 'IC § 35-38-9-1');
+
+    // Prior Filings 365-Day Enforcement (IC § 35-38-9-9(d) applies strictly to conviction tiers)
+    if (hasConvictionTiers) {
+      const priorFilingYes = document.querySelector('input[name="hasPriorFiling"]:checked')?.value === 'yes';
+      if (priorFilingYes) {
+        const priorCounty = $('#priorFilingCounty')?.value;
+        const priorDateStr = $('#priorFilingDate')?.value;
+        if (!priorCounty) {
+          showToast('Please select the Indiana county of your prior expungement filing.', 'error');
+          return;
+        }
+        if (!priorDateStr) {
+          showToast('Please enter the date of your prior county expungement filing.', 'error');
+          return;
+        }
+        const priorDate = new Date(priorDateStr + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffTime = today.getTime() - priorDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        if (diffDays < 0) {
+          showToast('Prior filing date cannot be in the future.', 'error');
+          return;
+        }
+        
+        if (diffDays > 365) {
+          showToast('Cannot generate: Under IC § 35-38-9-9(d), all conviction expungement petitions in separate counties must be filed within 365 days of the first filing. Your 365-day consolidation window has expired.', 'error', 8000);
+          return;
+        }
+        
+        const daysRemaining = 365 - diffDays;
+        const deadlineDate = new Date(priorDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+        const deadlineStr = deadlineDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        let tr6Note = '';
+        if (daysRemaining <= 14) {
+          tr6Note = `\n\n⚖️ Indiana Trial Rule 6(A) Computation Note:\nIf day 365 (${deadlineStr}) falls on a Saturday, Sunday, legal holiday, or day the clerk's office is closed, the statutory filing deadline extends to the next business day.`;
+        }
+
+        const warningMsg = `WARNING: Under IC § 35-38-9-9(d), you have ${daysRemaining} day(s) remaining (until ${deadlineStr}) to complete filing with the Court Clerk.\n\n` +
+          `CRITICAL FILE-STAMP REQUIREMENT: The statutory 365-day clock only stops on the date the Court Clerk file-stamps your petition—NOT the date you download this PDF packet. If filing by certified mail or waiting to pay court fees, ensure physical delivery before the deadline.${tr6Note}\n\n` +
+          `Do you wish to proceed?`;
+
+        if (!confirm(warningMsg)) {
+          return;
+        }
       }
     }
 
@@ -207,20 +260,8 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         throw new Error('No eligible cases found. Scan a MyCase page first.');
       }
       
-      if (AppState.currentReport.crossCountyBlock) {
+      if (AppState.currentReport.crossCountyBlock && AppState.currentReport.crossCountyBlock.isSafe === false) {
         throw new Error('Cannot generate: Multi-county petitions must be filed within 365 days of each other (IC § 35-38-9-9(d)).');
-      }
-
-      // Re-verify the prior filings check to ensure safety in executePacketGeneration
-      const priorFilingYesEx = document.querySelector('input[name="hasPriorFiling"]:checked')?.value === 'yes';
-      if (priorFilingYesEx) {
-        const priorDateStr = $('#priorFilingDate')?.value;
-        if (!priorDateStr) throw new Error('Please enter the date of your prior county expungement filing.');
-        const priorDate = new Date(priorDateStr);
-        const diffDays = Math.floor((new Date().getTime() - priorDate.getTime()) / (1000 * 60 * 60 * 24)); 
-        if (diffDays > 365) {
-          throw new Error('Cannot generate: Your 365-day window to file in multiple counties has expired (IC § 35-38-9-9(d)).');
-        }
       }
 
       // Determine target county (supports multi-county filing selection)
@@ -260,18 +301,42 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         throw new Error(`No eligible cases in ${targetCounty?.courtName || 'the selected county'}.`);
       }
 
+      const hasConvictionTiers = eligibleCases.some(c => c.statute && c.statute !== 'IC § 35-38-9-1');
+
+      // Re-verify the prior filings check to ensure safety in executePacketGeneration
+      let priorFilingPayload = { hasPrior: false };
+      const priorFilingYesEx = document.querySelector('input[name="hasPriorFiling"]:checked')?.value === 'yes';
+      if (hasConvictionTiers && priorFilingYesEx) {
+        const priorCounty = $('#priorFilingCounty')?.value;
+        const priorDateStr = $('#priorFilingDate')?.value;
+        if (!priorCounty) throw new Error('Please select the Indiana county of your prior expungement filing.');
+        if (!priorDateStr) throw new Error('Please enter the date of your prior county expungement filing.');
+        const priorDate = new Date(priorDateStr + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffDays = Math.floor((today.getTime() - priorDate.getTime()) / (1000 * 60 * 60 * 24)); 
+        if (diffDays > 365) {
+          throw new Error('Cannot generate: Under IC § 35-38-9-9(d), all conviction expungement petitions in separate counties must be filed within 365 days of the first filing. Your 365-day window has expired.');
+        }
+        priorFilingPayload = {
+          hasPrior: true,
+          county: priorCounty,
+          date: priorDateStr
+        };
+      }
+
       const payload = {
         petitioner: AppState.petitionerProfile,
         county: targetCounty?.courtName?.replace(/\s*(Superior|Circuit|Court)\s*/gi, '').trim() || 'Unknown',
         court: targetCounty?.courtName || 'Unknown Court',
         courtCode: targetCounty?.courtCode || 'XXXXX',
         cases: eligibleCases,
+        priorFiling: priorFilingPayload,
         includeFeeWaiver: $('#includeFeeWaiver')?.checked ?? true,
         includeAddressSupplement: $('#includeAddressSupplement')?.checked ?? true,
         eSignDocuments: $('#eSignDocuments')?.checked ?? false,
         acknowledgedOneShot: $('#ackOneShot')?.checked ?? true,
         acknowledgedNotLawyer: $('#ackNotLawyer')?.checked ?? true,
-        acknowledgedAllCases: $('#ackAllCounties')?.checked ?? true,
         acknowledgedProSeLiability: $('#ackProSe')?.checked ?? true
       };
 
@@ -427,10 +492,13 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         const courtName = AppState.currentReport.counties[selectedCode].courtName;
         syncDirectoryCounty(courtName);
       }
+      updateChecklist();
     });
 
     // Auto-sync when Generate tab is opened
     document.querySelector('.tab-btn[data-tab="generate"]')?.addEventListener('click', () => {
+      populatePriorFilingCounties();
+      updateChecklist();
       if (AppState.currentReport?.counties) {
         const selectedCode = $('#selectCountyPacket')?.value;
         const targetCounty = (selectedCode && AppState.currentReport.counties[selectedCode])
@@ -443,5 +511,6 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
     });
   }
 
-  // Initialize service directory
+  // Initialize service directory & prior filing counties
   initServiceDirectory();
+  populatePriorFilingCounties();

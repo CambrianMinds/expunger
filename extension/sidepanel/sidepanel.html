@@ -486,16 +486,37 @@
       </div>
 
       <!-- Prior Filings Check -->
-      <div class="prior-filings-box" style="margin-bottom: 24px; padding: 16px; background-color: var(--bg-card-elevated); border: 1px solid var(--border-color); border-radius: 8px;">
-        <h5 style="margin-top: 0; margin-bottom: 12px;">Prior County Filings (365-Day Rule Check)</h5>
-        <p style="font-size: 0.9rem; margin-bottom: 12px;">Have you filed an expungement petition in <b>any other Indiana county</b> within the past 12 months?</p>
-        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-          <label><input type="radio" name="hasPriorFiling" value="no" checked> No</label>
-          <label><input type="radio" name="hasPriorFiling" value="yes"> Yes</label>
+      <div id="priorFilingsCard" class="prior-filings-box" style="margin-bottom: 24px; padding: 16px; background-color: var(--bg-card-elevated); border: 1px solid var(--border-color); border-radius: 8px;">
+        <!-- Section 1 Exemption Callout (displayed when batch is exclusively Section 1) -->
+        <div id="priorFilingSection1Callout" style="display: none; padding: 12px 14px; background: rgba(59, 130, 246, 0.12); border-left: 4px solid #3b82f6; border-radius: 6px; font-size: 0.88rem; line-height: 1.45;">
+          <strong>ℹ️ Section 1 Non-Conviction Exemption:</strong> Your eligible records consist exclusively of Section 1 non-convictions, dismissals, or infractions (IC § 35-38-9-1). Non-conviction expungements carry no lifetime limit and are completely exempt from the 365-day multi-county consolidation window (IC § 35-38-9-9(d)).
         </div>
-        <div id="priorFilingDateBox" style="display: none;">
-          <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px;">Date of First Filing:</label>
-          <input type="date" id="priorFilingDate" class="input-field" style="width: 200px;">
+
+        <!-- Conviction Prior Filings Questionnaire -->
+        <div id="priorFilingQuestionnaire">
+          <h5 style="margin-top: 0; margin-bottom: 12px;">Prior County Filings (365-Day Rule Check)</h5>
+          <p style="font-size: 0.9rem; margin-bottom: 12px;">Have you filed an expungement petition in <b>any other Indiana county</b> within the past 12 months?</p>
+          <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+            <label><input type="radio" name="hasPriorFiling" value="no" checked> No</label>
+            <label><input type="radio" name="hasPriorFiling" value="yes"> Yes</label>
+          </div>
+          <div id="priorFilingDateBox" style="display: none;">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px;">
+              <div style="flex: 1; min-width: 180px;">
+                <label for="priorFilingCounty" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px;">Prior Filing County:</label>
+                <select id="priorFilingCounty" class="input-field" style="width: 100%;">
+                  <option value="">Select County...</option>
+                </select>
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label for="priorFilingDate" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px;">Date of First Filing:</label>
+                <input type="date" id="priorFilingDate" class="input-field" style="width: 100%;">
+              </div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; margin-bottom: 0; line-height: 1.4;">
+              ⚖️ <em>Indiana Trial Rule 6(A) &amp; Clerk File-Stamp:</em> The statutory 365-day clock (IC § 35-38-9-9(d)) only stops on the date the Court Clerk file-stamps your petition—not when this packet is generated. If the 365th day falls on a weekend, legal holiday, or day the office is closed, the filing deadline extends to the next business day.
+            </p>
+          </div>
         </div>
       </div>
 

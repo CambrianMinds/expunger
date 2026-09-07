@@ -424,6 +424,11 @@ const IndianaExpungement = (() => {
     for (const c of cases) {
       if (!c.eligibility) continue;
       
+      // IC § 35-38-9-1 Exemption: Arrest records and non-convictions carry no
+      // lifetime limit and no 365-day multi-county consolidation clock under IC § 35-38-9-9(d) & (i).
+      // Only conviction tiers (IC §§ 35-38-9-2 through 35-38-9-5) are restricted.
+      if (c.eligibility.statute === 'IC § 35-38-9-1') continue;
+
       if (c.eligibility.eligible) {
         hasEligibleCases = true;
       }
@@ -443,7 +448,7 @@ const IndianaExpungement = (() => {
       return {
         isSafe: false,
         reason: 'Cross-County 365-Day Window Violation',
-        message: `You have eligible cases ready to file, but you also have cases in ${conflictingCounties.join(', ')} that will not be eligible for over a year (until ${maxEligibilityDate.toLocaleDateString()}). If you file your eligible cases today, you will be permanently locked out of expunging the remaining cases under the lifetime one-shot rule.`,
+        message: `You have eligible conviction records ready to file, but you also have conviction cases in ${conflictingCounties.join(', ')} that will not be eligible for over a year (until ${maxEligibilityDate.toLocaleDateString()}). Under IC § 35-38-9-9(d) and the lifetime one-shot rule, filing your eligible convictions today would permanently lock out the remaining convictions.`,
         maxEligibilityDate: maxEligibilityDate,
         conflictingCounties: conflictingCounties
       };
@@ -569,6 +574,7 @@ const IndianaExpungement = (() => {
     checkIneligibility,
     assessEligibility,
     partitionByCounty,
+    checkCrossCounty365DaySafety,
     analyzeAll,
     getCountyName
   };

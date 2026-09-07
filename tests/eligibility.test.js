@@ -109,4 +109,82 @@ describe('IndianaExpungement Eligibility Rules Engine', () => {
     });
   });
 
+  describe('checkCrossCounty365DaySafety (Statutory Scope & Section 1 Decoupling)', () => {
+    it('allows arrest records (Section 1) without 365-day conviction cross-county block', () => {
+      // Future date > 1 year from now
+      const farFutureDate = new Date();
+      farFutureDate.setFullYear(farFutureDate.getFullYear() + 3);
+
+      const cases = [
+        {
+          case_number: '49D01-2001-IF-000001',
+          court: 'Marion Superior Court',
+          eligibility: {
+            eligible: true,
+            statute: 'IC § 35-38-9-1'
+          }
+        },
+        {
+          case_number: '29D01-2301-F6-000002',
+          court: 'Hamilton Superior Court',
+          eligibility: {
+            eligible: false,
+            statute: 'IC § 35-38-9-3',
+            eligibilityDate: farFutureDate
+          }
+        }
+      ];
+
+      // Eligible case is Section 1 (arrest/infraction) -> Arrest Record Exemption
+      const safety = IndianaExpungement.checkCrossCounty365DaySafety(cases);
+      expect(safety.isSafe).toBe(true);
+    });
+
+    it('allows purely Section 1 arrest records across multiple counties', () => {
+      const cases = [
+        {
+          case_number: '49D01-2001-IF-000001',
+          court: 'Marion Superior Court',
+          eligibility: { eligible: true, statute: 'IC § 35-38-9-1' }
+        },
+        {
+          case_number: '45D01-2001-IF-000002',
+          court: 'Lake Superior Court',
+          eligibility: { eligible: true, statute: 'IC § 35-38-9-1' }
+        }
+      ];
+
+      const safety = IndianaExpungement.checkCrossCounty365DaySafety(cases);
+      expect(safety.isSafe).toBe(true);
+    });
+
+    it('blocks conviction filings when another county conviction is > 365 days from eligibility', () => {
+      const farFutureDate = new Date();
+      farFutureDate.setFullYear(farFutureDate.getFullYear() + 2);
+
+      const cases = [
+        {
+          case_number: '49D01-1801-CM-000001',
+          court: 'Marion Superior Court',
+          eligibility: { eligible: true, statute: 'IC § 35-38-9-2' }
+        },
+        {
+          case_number: '29D01-2301-F6-000002',
+          court: 'Hamilton Superior Court',
+          eligibility: {
+            eligible: false,
+            statute: 'IC § 35-38-9-3',
+            eligibilityDate: farFutureDate
+          }
+        }
+      ];
+
+      const safety = IndianaExpungement.checkCrossCounty365DaySafety(cases);
+      expect(safety.isSafe).toBe(false);
+      expect(safety.reason).toContain('Cross-County 365-Day Window Violation');
+      expect(safety.conflictingCounties).toContain('Hamilton Superior Court');
+    });
+  });
+
 });
+

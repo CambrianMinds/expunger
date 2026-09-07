@@ -58,6 +58,36 @@ export function updateChecklist() {
   if (generateBtn) {
     generateBtn.disabled = !(profileReady && casesReady && acksReady);
   }
+
+  updatePriorFilingsVisibility();
+}
+
+export function updatePriorFilingsVisibility() {
+  const section1Callout = $('#priorFilingSection1Callout');
+  const questionnaire = $('#priorFilingQuestionnaire');
+  if (!section1Callout || !questionnaire) return;
+
+  const selectedCountyCode = $('#selectCountyPacket')?.value;
+  let casesToCheck = AppState.currentCases || [];
+  if (selectedCountyCode && AppState.currentReport?.counties?.[selectedCountyCode]) {
+    casesToCheck = AppState.currentReport.counties[selectedCountyCode].cases;
+  }
+
+  const eligibleCases = casesToCheck.filter(c => c.eligibility?.eligible);
+
+  if (eligibleCases.length > 0) {
+    const hasConvictions = eligibleCases.some(c => c.eligibility?.statute && c.eligibility.statute !== 'IC § 35-38-9-1');
+    if (!hasConvictions) {
+      // Exclusively Section 1 non-convictions!
+      section1Callout.style.display = 'block';
+      questionnaire.style.display = 'none';
+      return;
+    }
+  }
+
+  // Conviction tiers present or pending scan
+  section1Callout.style.display = 'none';
+  questionnaire.style.display = 'block';
 }
 
 export function setChecklistItem(id, ready) {
