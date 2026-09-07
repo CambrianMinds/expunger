@@ -521,9 +521,69 @@ function buildForm00(ctx, payload) {
   ctx.drawSingleSpacedParagraph(
     '6. Fillable Fields & Signatures: Any field left blank can be filled directly in this PDF before filing or printed and signed. If you selected the e-sign option, your "/s/" signature is already affixed and the documents are ready for upload.'
   );
+  ctx.drawHeading('AFTER THE JUDGE SIGNS: POST-ORDER DISTRIBUTION REQUIREMENTS');
+  ctx.drawDoubleSpacedParagraph(
+    'Obtaining the signed order is only the beginning. Under Indiana Code § 35-38-9-6 and § 35-38-9-7, ' +
+    'the Indiana State Police (ISP) Criminal History Repository, the Bureau of Motor Vehicles (BMV), and ' +
+    'all arresting agencies must receive certified copies of the signed order before they are legally ' +
+    'obligated to restrict, redact, or seal their records. County clerk practice varies significantly:'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '• AUTOMATIC TRANSMISSION (most IEFS-integrated counties): The Clerk of Courts transmits certified ' +
+    'copies electronically to ISP and BMV upon entry of the order. Monitor your MyCase docket at ' +
+    'public.courts.in.gov/mycase for the file-stamped order. No additional mailing required.'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '• MANUAL CERTIFIED MAILING (many rural and smaller counties): The Clerk places the burden on you ' +
+    'to obtain physical certified copies from the clerk\'s counter (typically $1–$5 per page) and mail them to:'
+  );
+  ctx.drawSingleSpacedParagraph('  · Indiana State Police Criminal History Repository, 100 N. Senate Ave., Indianapolis, IN 46204');
+  ctx.drawSingleSpacedParagraph('  · Indiana Bureau of Motor Vehicles, PO Box 6008, Indianapolis, IN 46206');
+  ctx.drawSingleSpacedParagraph('  · All arresting agencies listed in your DOC 10 (County Service Directory enclosed in this packet)');
+  ctx.drawDoubleSpacedParagraph(
+    '⚠️ CRITICAL: Your public records will NOT automatically vanish the moment the judge signs the order. ' +
+    'Contact the clerk\'s office to verify whether they transmit to ISP and BMV automatically or whether ' +
+    'you must obtain and mail certified copies yourself. Failure to transmit means expunged records will ' +
+    'continue to appear in employer and agency background checks.'
+  );
+
+  ctx.drawHeading('MONITORING THE 30-DAY PROSECUTOR RESPONSE WINDOW (IC § 35-38-9-9)');
+  ctx.drawDoubleSpacedParagraph(
+    'Under Indiana Code § 35-38-9-9, the prosecuting attorney has 30 days from the date of service ' +
+    'of your petition to file a written objection. The following rules apply based on your case type:'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '• Non-convictions (IC § 35-38-9-1) and Class D/Level 6 and lower misdemeanors (IC §§ 35-38-9-2 ' +
+    'through 35-38-9-3): If the prosecutor consents or files no objection by day 30, the court is ' +
+    'authorized under IC § 35-38-9-9 to grant or deny the petition on the pleadings alone—NO hearing required.'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '• Higher Felony Tiers (IC §§ 35-38-9-4 through 35-38-9-5): The court MUST hold a hearing regardless ' +
+    'of whether the prosecutor objects or consents.'
+  );
+  ctx.drawSingleSpacedParagraph('WHAT TO DO AFTER FILING:');
+  ctx.drawSingleSpacedParagraph(
+    '1. Days 1–30: Monitor your MyCase docket for a "Prosecutor Response," "Prosecutor Consent," or ' +
+    '"Objection to Expungement Petition" entry at public.courts.in.gov/mycase.'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '2. Day 31 with no response: Contact the court coordinator or bailiff to ask whether the judge intends ' +
+    'to rule on the pleadings or set a hearing date. Do not assume the matter is resolved.'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '3. If the prosecutor objects: You will receive service through IEFS or by mail. You have the right to ' +
+    'file a Reply. Consider contacting Indiana Legal Services (indianalegalservices.org) or a licensed ' +
+    'Indiana attorney for guidance before any hearing.'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '4. At any scheduled hearing: Bring all original documentation including your MyCase case summary ' +
+    'printout, this full petition packet, and any supporting financial records (proof of fee payment, ' +
+    'restitution, fines cleared).'
+  );
 
   const pet = payload.petitioner || {};
   const missingFields = [];
+
   if (!pet.dob) missingFields.push('Date of Birth');
   if (!pet.ssn) missingFields.push('Social Security Number');
   if (!pet.driverLicense) missingFields.push('Driver\'s License Number');
