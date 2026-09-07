@@ -779,8 +779,9 @@ function buildForm04(ctx, payload) {
     const priorDateStr = !isNaN(priorDateObj.getTime())
       ? priorDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
       : payload.priorFiling.date;
+    const causeClause = payload.priorFiling.causeNumber ? ` under Cause No. ${payload.priorFiling.causeNumber}` : '';
     ctx.drawBullet(
-      `Petitioner previously filed a petition for expungement in ${payload.priorFiling.county} County on ` +
+      `Petitioner previously filed a petition for expungement in ${payload.priorFiling.county} County${causeClause} on ` +
       `${priorDateStr}, and this petition is timely submitted within the 365-day consolidation period prescribed by IC § 35-38-9-9(d).`
     );
     ctx.drawBullet(
@@ -827,9 +828,10 @@ function buildForm05(ctx, payload) {
     const priorDateStr = !isNaN(priorDateObj.getTime())
       ? priorDateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
       : payload.priorFiling.date;
+    const causeClause = payload.priorFiling.causeNumber ? ` under Cause No. ${payload.priorFiling.causeNumber}` : '';
     ctx.drawDoubleSpacedParagraph(
       `STATUTORY CROSS-COUNTY DISCLOSURE (IC § 35-38-9-9(d)): Petitioner hereby affirmatively discloses ` +
-      `that a related petition for expungement was previously filed in ${payload.priorFiling.county} County on ` +
+      `that a related petition for expungement was previously filed in ${payload.priorFiling.county} County${causeClause} on ` +
       `${priorDateStr}. The within petition is timely filed within the 365-day statutory consolidation period.`
     );
   }
@@ -857,6 +859,7 @@ function buildForm06(ctx, payload) {
   const nameUpper = name.toUpperCase();
   const county = payload.county || 'Marion';
   const countyInfo = getCountyInfo(county);
+  const method = payload.serviceMethod || (payload.eSignDocuments ? 'iefs' : 'certified_mail');
 
   ctx.drawSingleSpacedParagraph(
     `I hereby certify that on the date set forth below, a true and correct copy of the foregoing ` +
@@ -901,8 +904,12 @@ function buildForm06(ctx, payload) {
     ctx.cursorY -= 4;
   }
 
+  const iefsBox = method === 'iefs' ? '[X]' : '[  ]';
+  const certBox = method === 'certified_mail' ? '[X]' : '[  ]';
+  const mailBox = method === 'first_class' ? '[X]' : '[  ]';
+
   ctx.drawHeading('Method of Service:');
-  ctx.drawText('[  ] Indiana Odyssey E-Filing System (IEFS)      [  ] Certified Mail      [  ] First Class Mail', 72, ctx.cursorY, 10.5, 'regular');
+  ctx.drawText(`${iefsBox} Indiana Odyssey E-Filing System (IEFS)      ${certBox} Certified Mail      ${mailBox} First Class Mail`, 72, ctx.cursorY, 10.5, 'regular');
   ctx.cursorY -= 16;
 
   ctx.drawSignatureBlock(nameUpper, 'Petitioner Pro Se', 'f6');
@@ -922,6 +929,9 @@ function buildForm07(ctx, payload) {
   const name = pet.fullName || 'Petitioner';
   const cases = payload.cases || [];
 
+  const section1Cases = cases.filter(c => c.statute === 'IC § 35-38-9-1');
+  const convictionCases = cases.filter(c => c.statute !== 'IC § 35-38-9-1');
+
   ctx.drawDoubleSpacedParagraph(
     `Come now the Court, having reviewed the Verified Petition for Expungement filed by Petitioner, ${name}, ` +
     `the response of the Prosecuting Attorney (or having noted that no timely objection was filed), ` +
@@ -934,25 +944,47 @@ function buildForm07(ctx, payload) {
   ctx.drawBullet('3. Petitioner satisfies all applicable waiting periods and conditions set forth in IC § 35-38-9.');
   ctx.drawBullet('4. No criminal proceedings are pending against Petitioner in any jurisdiction.');
   ctx.drawBullet('5. Petitioner has satisfied all court costs, fines, user fees, and restitution obligations.');
-  ctx.drawBullet('6. Petitioner has not previously received an expungement of a conviction record in any Indiana court.');
+  if (convictionCases.length > 0) {
+    ctx.drawBullet('6. Petitioner has not previously received an expungement of a conviction record in any Indiana court (IC § 35-38-9-9(i)).');
+  }
 
   ctx.drawHeading('IT IS THEREFORE ORDERED, ADJUDGED, AND DECREED:');
-  ctx.drawDoubleSpacedParagraph(
-    '1. The Verified Petition for Expungement is hereby GRANTED as to all records, charges, and convictions enumerated below:'
-  );
 
-  const caseLines = cases.map(c => `Cause No. ${c.caseNumber || 'Unknown'} — ${c.charges || 'Offenses'} (${c.type || 'XP'})`);
-  if (caseLines.length === 0) caseLines.push('All qualifying arrest and conviction records on file in this cause.');
-  caseLines.forEach(cl => ctx.drawBullet(cl, 14));
+  // Bifurcated Relief: Non-Convictions vs. Convictions
+  if (section1Cases.length > 0) {
+    ctx.drawDoubleSpacedParagraph(
+      '1. ARREST AND NON-CONVICTION RECORDS (IC § 35-38-9-1): The Petition is GRANTED as to all records, ' +
+      'arrests, charges, and proceedings resulting in dismissal, acquittal, or no charges filed as itemized below. ' +
+      'The Clerk of Court, Indiana State Police, Bureau of Motor Vehicles, and all law enforcement agencies ' +
+      'holding records pertaining to said cases shall permanently redact and seal all public records relating to these proceedings ' +
+      'and shall not disclose them to any person except as authorized under Indiana Code § 35-38-9-1:'
+    );
+    section1Cases.forEach(c => {
+      ctx.drawBullet(`Cause No. ${c.caseNumber || 'Unknown'} — ${c.charges || 'Non-Conviction / Dismissal'} (${c.type || 'XP'}) [IC § 35-38-9-1]`, 14);
+    });
+  }
 
-  ctx.drawDoubleSpacedParagraph(
-    '2. The Clerk of Court, Indiana State Police, Indiana Bureau of Motor Vehicles, and all law enforcement agencies ' +
-    'holding records pertaining to said cases shall permanently redact and seal all public records relating to these proceedings ' +
-    'and shall not disclose them to any person except as authorized under Indiana Code § 35-38-9-10.'
-  );
-  ctx.drawDoubleSpacedParagraph(
-    '3. Petitioner’s full civil rights (including rights to vote, hold public office, and serve on a jury) are fully RESTORED.'
-  );
+  if (convictionCases.length > 0) {
+    const sectionNum = section1Cases.length > 0 ? '2' : '1';
+    ctx.drawDoubleSpacedParagraph(
+      `${sectionNum}. CONVICTION RECORDS (IC §§ 35-38-9-2 THROUGH 35-38-9-5): The Petition is GRANTED as to the ` +
+      'conviction records enumerated below. Pursuant to Indiana Code § 35-38-9-6 and § 35-38-9-7, the Clerk of Court, ' +
+      'Indiana State Police, and arresting agencies shall prohibit disclosure of these records or mark them as expunged ' +
+      'in accordance with statutory access restrictions:'
+    );
+    convictionCases.forEach(c => {
+      ctx.drawBullet(`Cause No. ${c.caseNumber || 'Unknown'} — ${c.charges || 'Offenses'} (${c.type || 'XP'}) [${c.statute || 'IC § 35-38-9'}]`, 14);
+    });
+
+    const restoreNum = section1Cases.length > 0 ? '3' : '2';
+    ctx.drawDoubleSpacedParagraph(
+      `${restoreNum}. Petitioner’s full civil rights (including rights to vote, hold public office, and serve on a jury) are fully RESTORED pursuant to IC § 35-38-9-10.`
+    );
+  } else if (section1Cases.length > 0) {
+    ctx.drawDoubleSpacedParagraph(
+      '2. Pursuant to IC § 35-38-9-10, Petitioner shall be treated as not having been arrested or charged with respect to all sealed records.'
+    );
+  }
 
   ctx.ensureSpace(95);
   ctx.drawText('SO ORDERED this ________ day of ____________________, 20____.', 72, ctx.cursorY, 12, 'bold');

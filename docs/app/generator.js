@@ -327,12 +327,16 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         if (diffDays > 365) {
           throw new Error('Cannot generate: Under IC § 35-38-9-9(d), all conviction expungement petitions in separate counties must be filed within 365 days of the first filing. Your 365-day window has expired.');
         }
+        const priorCauseNumber = $('#priorFilingCauseNumber')?.value?.trim() || null;
         priorFilingPayload = {
           hasPrior: true,
           county: priorCounty,
-          date: priorDateStr
+          date: priorDateStr,
+          causeNumber: priorCauseNumber
         };
       }
+
+      const serviceMethod = $('#serviceMethod')?.value || ($('#eSignDocuments')?.checked ? 'iefs' : 'certified_mail');
 
       const payload = {
         petitioner: AppState.petitionerProfile,
@@ -341,6 +345,7 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         courtCode: targetCounty?.courtCode || 'XXXXX',
         cases: eligibleCases,
         priorFiling: priorFilingPayload,
+        serviceMethod: serviceMethod,
         includeFeeWaiver: $('#includeFeeWaiver')?.checked ?? true,
         includeAddressSupplement: $('#includeAddressSupplement')?.checked ?? true,
         eSignDocuments: $('#eSignDocuments')?.checked ?? false,

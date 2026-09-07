@@ -512,6 +512,10 @@
                 <label for="priorFilingDate" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px;">Date of First Filing:</label>
                 <input type="date" id="priorFilingDate" class="input-field" style="width: 100%;">
               </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label for="priorFilingCauseNumber" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px;">Prior XP Cause Number (Optional):</label>
+                <input type="text" id="priorFilingCauseNumber" class="input-field" placeholder="e.g. 49D01-2501-XP-000123" style="width: 100%;">
+              </div>
             </div>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; margin-bottom: 0; line-height: 1.4;">
               ⚖️ <em>Indiana Trial Rule 6(A) &amp; Clerk File-Stamp:</em> The statutory 365-day clock (IC § 35-38-9-9(d)) only stops on the date the Court Clerk file-stamps your petition—not when this packet is generated. If the 365th day falls on a weekend, legal holiday, or day the office is closed, the filing deadline extends to the next business day.
@@ -628,6 +632,14 @@
           <input type="checkbox" id="eSignDocuments">
           <span data-i18n="label_esign">Electronically sign documents (/s/ format for IEFS e-Filing)</span>
         </label>
+        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+          <label for="serviceMethod" style="font-size: 0.85rem; font-weight: 500;">Prosecutor Service Method (Form 06):</label>
+          <select id="serviceMethod" class="input-field" style="padding: 4px 8px; font-size: 0.85rem;">
+            <option value="iefs" selected>Indiana Odyssey E-Filing System (IEFS)</option>
+            <option value="certified_mail">Certified Mail (Return Receipt Requested)</option>
+            <option value="first_class">First Class U.S. Mail / Hand Delivery</option>
+          </select>
+        </div>
       </div>
 
       <button class="btn btn-primary btn-lg btn-generate" id="btnGenerate" disabled>
