@@ -78,6 +78,134 @@ Your personal information (Social Security Number, Date of Birth, Driver's Licen
 
 ---
 
+## Technical Implementation Highlights
+
+### 🔍 Knockout.js Observable Scraping (Why It's The Only Viable Approach)
+
+Indiana's MyCase portal is built on the Odyssey justice platform, which renders its UI entirely through **Knockout.js** — a reactive MVVM framework that binds case data, charges, and disposition events to a JavaScript observable view-model before the page renders.
+
+The content script reads this observable model directly via `ko.dataFor()` on the root Knockout-bound element. This means the scraper reads structured JavaScript objects — not HTML — giving it access to the full case data graph regardless of what the DOM looks like visually:
+
+```javascript
+const koRoot = document.querySelector('[data-bind]');
+const vm = ko.dataFor(koRoot);
+const cases = ko.unwrap(vm.SearchResults) || ko.unwrap(vm.caseList);
+```
+
+**Why not CSS selectors?** The Odyssey platform's HTML template structure changes with every court system update. Any selector-based scraper breaks the moment Indiana updates its frontend — which happens frequently with no public changelog. By reading the reactive data model directly, the tool is resilient to template re-renders, column reordering, and CSS class changes, because the underlying object structure is governed by the court's own data schema.
+
+**Fallback chain when KO is unavailable:**
+1. Structured DOM traversal using stable ARIA roles and `data-bind` attributes
+2. CCS `fetch()` call to the Odyssey case detail endpoint with `credentials: 'same-origin'` and an 800–1500ms randomized jitter delay (to mimic human browsing and avoid rate limiting)
+
+---
+
+### ⚖️ IC § 35-38-9 Statutory Decision Engine
+
+`eligibility.js` is a self-contained IIFE that attaches to `window.IndianaExpungement` for browser use and also exposes `module.exports` for CommonJS (Jest tests). **It is intentionally not an ES module** — it is loaded as a plain `<script>` tag before the module-type `main.js` entry point, because the Chrome content script pipeline requires it to be available globally before `content.js` executes.
+
+The engine evaluates each case against all five statutory tiers:
+
+| Tier | Statute | Standard | Wait Period |
+|------|---------|----------|-------------|
+| Non-Convictions | IC § 35-38-9-1 | **Mandatory Grant** | ≥ 1 year from arrest/dismissal |
+| Misdemeanors | IC § 35-38-9-2 | **Mandatory Grant** | ≥ 5 years from conviction |
+| Class D / Level 6 Felonies | IC § 35-38-9-3 | **Mandatory Grant** | ≥ 8 years from conviction |
+| Major Felonies (Levels 1–5) | IC § 35-38-9-4 | **Discretionary** | ≥ 8 years from conviction |
+| Serious Bodily Injury Felonies | IC § 35-38-9-5 | **Prosecutor Consent Required** | ≥ 10 years from conviction |
+
+**Key design decisions:**
+- **Section 1 decoupling:** Non-conviction records (arrests, dismissals, acquittals under IC § 35-38-9-1) carry **no lifetime limit** and are explicitly excluded from the 365-day multi-county consolidation clock (IC § 35-38-9-9(d)), which governs only conviction tiers. An arrest-only petition never blocks conviction expungements in other counties.
+- **Integer day arithmetic:** The 365-day consolidation window uses `Math.floor((today - priorDate) / 86400000)` — exact integer day counts, not month arithmetic — preventing leap-year edge cases from inadvertently expiring a valid filing window.
+- **Indiana Trial Rule 6(A) rollover:** When fewer than 14 days remain in the window, the engine computes the exact 365th calendar day and alerts if it falls on a weekend, legal holiday, or court closure (deadline extends to the next business day).
+
+---
+
+### 📄 In-Browser PDF Generation (pdf-lib)
+
+All 10 court pleadings are assembled client-side using the vendored `pdf-lib.min.js` — no server, no upload, no cloud rendering. The `pdf-generator.js` context engine enforces **Indiana Trial Rule 10** formatting constraints throughout:
+
+- 8.5 × 11 in (612 × 792 pt), 72 pt (1-inch) margins all sides
+- 12 pt minimum, black-only (`#000000`), Times New Roman / Georgia / Arial families
+- Double-spaced body text; single-spaced tables and footnotes
+- Bottom-center page numbers starting at 1
+- Caption block: court name, party title, cause number, Rule 7(A) designation
+
+Interactive **fillable form fields** are embedded via pdf-lib's `PDFAcroForm` API so petitioners can type PII directly into the PDF instead of handwriting it — reducing transcription errors on the Confidential Information Sheet (DOC 03).
+
+---
+
+### 🏛️ Bifurcated DOC 07 Relief (Mixed Batches)
+
+When a packet contains both IC § 35-38-9-1 non-conviction records and conviction-tier records in the same county, DOC 07 (Proposed Order) cleanly bifurcates the relief section:
+
+**Section 1 subsection (non-convictions):**
+- Decrees permanent redaction and sealing under IC § 35-38-9-1/10
+- Affirms that petitioner shall be treated as never having been arrested or charged
+- **Omits civil rights restoration language** — civil rights were never lost for dismissed/arrest records
+
+**Conviction subsection (IC §§ 35-38-9-2 through 35-38-9-5):**
+- Enforces statutory access restrictions under IC §§ 35-38-9-6 and 35-38-9-7
+- Explicitly restores full civil rights (voting, public office, jury service) under IC § 35-38-9-10
+- The lifetime one-shot finding (IC § 35-38-9-9(i)) is included **only** when conviction tiers are present
+
+Courts reject blanket orders that apply conviction-level restrictions to dismissed charges, or that purport to restore civil rights for non-conviction records. Bifurcation eliminates this as a rejection vector for mixed-batch petitions.
+
+---
+
+### 📋 Prior XP Cause Number in Affirmative Pleadings
+
+When a petitioner has already filed in County A and is now filing in County B within the 365-day consolidation window, the tool captures:
+- **Prior filing county** (from a dropdown of all 92 Indiana counties)
+- **Prior filing date** (date input for exact integer-day arithmetic)
+- **Prior XP cause number** (optional, e.g., `49D01-2501-XP-000123`)
+
+This data is injected into DOC 04 (Verified Petition) and DOC 05 (Prosecutor Notice) as affirmative statutory averments:
+
+> *"Petitioner previously filed a petition for expungement in Marion County on January 15, 2025 under Cause No. 49D01-2501-XP-000123, and this petition is timely submitted within the 365-day consolidation period prescribed by IC § 35-38-9-9(d)."*
+
+Providing the specific cause number transforms an unverified claim into an instantly auditable Odyssey docket reference. A deputy prosecutor can verify the prior filing date within seconds — eliminating defensive motions for clarification or evidentiary hearings.
+
+---
+
+### 📮 Form 06 Service Method Pre-Selection
+
+DOC 06 (Certificate of Service) pre-marks the correct method checkbox based on the petitioner's UI selection:
+
+```
+[X] Indiana Odyssey E-Filing System (IEFS)      [  ] Certified Mail      [  ] First Class Mail
+```
+
+Pro se filers frequently file through IEFS while leaving paper mail boxes checked (or vice versa), creating an ambiguous certificate of service on the docket. The synchronized selector closes this gap between Indiana Trial Rule 5 requirements and actual filing mechanics.
+
+---
+
+### 🧪 Dual-Tree Parity & Automated Test Suite
+
+The codebase maintains two parallel source trees that must remain identical for all shared modules:
+
+| Tree | Entry Point | Purpose |
+|------|------------|---------|
+| `extension/sidepanel/` | `sidepanel.html` | Chrome Manifest V3 extension |
+| `docs/app/` | `app.html` | Standalone web app (GitHub Pages) |
+
+A dedicated `scripts/check-parity.js` script enforces **byte-exact equality** between both `pdf-generator.js` files as part of the `npm test` pipeline. Any character-level discrepancy between the trees fails the build:
+
+```bash
+npm test
+# Runs: jest + check-parity.js + check-i18n.js + check-disclaimers.js
+# 20 Jest assertions · ~500ms total runtime
+```
+
+**Jest coverage includes:**
+- Section 1 non-conviction decoupling from the 365-day clock
+- Cross-county conviction blocking at exactly day 365 and day 366
+- Leap year boundary arithmetic (Feb 29 filing dates)
+- All statutory disqualification categories (sex offenses, public servant misconduct, homicide)
+- `extractCaseTypeCode`, `yearsElapsed`, and `assessEligibility` function contracts
+
+---
+
 ## Court Forms Generated (10 Official Pleadings)
 
 Every packet generated by the tool contains standard Indiana Office of Court Services (IOCS) pro se pleadings formatted for immediate court filing:
@@ -91,8 +219,8 @@ Every packet generated by the tool contains standard Indiana Office of Court Ser
 | **03** | `03_Confidential_Information_Sheet.pdf` | Confidential Information Sheet (SSN, DOB, DL#, Addresses) | ACR Rule 5 & IC § 35-38-9-8(b) | Sealed Envelope |
 | **04** | `04_Verified_Petition_for_Expungement.pdf` | Verified Petition Itemizing All Causes & Affirmations | IC §§ 35-38-9-1–4 | Presiding Judge |
 | **05** | `05_Notice_of_Filing_to_Prosecutor.pdf` | Formal 30-Day Notice of Filing to County Prosecutor | IC § 35-38-9-9(g) | Prosecutor |
-| **06** | `06_Certificate_of_Service.pdf` | Proof of Service (Certified Mail / Hand Delivery) | Ind. Trial Rule 5 | Trial Court |
-| **07** | `07_Proposed_Order_Granting_Expungement.pdf` | Proposed Judicial Order Directing Sealing (ISP, BMV, Court) | IC §§ 35-38-9-1–6 | Judge Signature |
+| **06** | `06_Certificate_of_Service.pdf` | Proof of Service (Certified Mail / Hand Delivery / IEFS) | Ind. Trial Rule 5 | Trial Court |
+| **07** | `07_Proposed_Order_Granting_Expungement.pdf` | Proposed Judicial Order Directing Sealing (ISP, BMV, Court) — Bifurcated for Mixed Batches | IC §§ 35-38-9-1–7, 35-38-9-10 | Judge Signature |
 | **08** | `08_Fee_Waiver_Request_and_Order.pdf` | Verified Request to Waive $157 Civil Filing Fee & Order | IC § 33-37-3-2 | Presiding Judge |
 
 ---
@@ -177,6 +305,7 @@ If you prefer an integrated sidepanel experience in Google Chrome, you can insta
 2. **Sign in ink:** Hand-sign the physical signature lines across all pleadings under penalty of perjury.
 3. **File with the Clerk:** File the original documents (Appearance, Confidential Sheets under seal, Verified Petition, and Proposed Order) with the Circuit or Superior Court Clerk in the county where your convictions occurred. You can submit in person at the clerk's window or e-file via the [Indiana E-Filing System (IEFS)](https://www.in.gov/courts/efile/).
 4. **Serve the Prosecutor & Agencies:** Under IC § 35-38-9-8(e), serve copies of the petition and Notice of Filing on the County Prosecuting Attorney via Certified Mail or IEFS e-service, as itemized on Form 06 (*Certificate of Service*).
+5. **Post-Order Distribution:** After the judge signs DOC 07, verify with the court clerk whether they automatically transmit the signed order to ISP and BMV electronically. In many rural counties, you must obtain physical certified copies from the clerk's counter and mail them yourself to the Indiana State Police Criminal History Repository (100 N. Senate Ave., Indianapolis, IN 46204) and BMV (PO Box 6008, Indianapolis, IN 46206).
 
 ---
 
@@ -188,7 +317,7 @@ The IC § 35-38-9 statutory decision engine is tested using Jest:
 # Install dependencies
 npm install
 
-# Run the statutory test suite
+# Run the statutory test suite (jest + parity + i18n + disclaimers)
 npm test
 ```
 
@@ -201,9 +330,9 @@ indiana-expungement-assistant/
 ├── extension/                     # Chrome Extension (Manifest V3)
 │   ├── manifest.json              # MV3 configuration with required permissions
 │   ├── background.js              # Service worker handling downloads & tab routing
-│   ├── content.js                 # In-browser Knockout observable scraper
-│   ├── eligibility.js             # IC § 35-38-9 statutory decision engine
-│   ├── pdf-lib.min.js             # Client-side PDF generation library
+│   ├── content.js                 # In-browser Knockout observable scraper (primary) + CCS fetch fallback
+│   ├── eligibility.js             # IC § 35-38-9 statutory decision engine (IIFE, not ES module)
+│   ├── pdf-lib.min.js             # Vendored client-side PDF generation library
 │   ├── icons/                     # Standard extension icons (16, 32, 48, 128px)
 │   └── sidepanel/                 # Modular ES6 Civic sidepanel UI
 │       ├── main.js                # Central entry point & lifecycle controller
@@ -211,29 +340,41 @@ indiana-expungement-assistant/
 │       ├── scanner.js             # Scraper orchestration & parity modal
 │       ├── profile.js             # Petitioner profile & address management
 │       ├── generator.js           # Packet generation workflow controller
-│       ├── pdf-generator.js       # Client-side PDF layout & form generator
+│       ├── pdf-generator.js       # Client-side PDF layout & form generator (Trial Rule 10)
 │       ├── ui.js                  # Toast notifications & checklist state
 │       ├── utils.js               # DOM selectors & formatting utilities
+│       ├── county-directory.js    # Verified clerk/prosecutor/ISP/BMV service addresses (92 counties)
 │       ├── sidepanel.html         # Tabbed UI with alerts, modals & input guards
 │       └── sidepanel.css          # Modern civic portal styling with glassmorphism
 ├── docs/                          # Public GitHub Pages civic portal
-│   ├── index.html                 # Self-help guide & interactive eligibility calculator
+│   ├── index.html                 # Self-help guide, interactive eligibility calculator & technical docs
 │   ├── style.css                  # Dignified civic design system (slate, navy, gold)
 │   ├── app.js                     # Calculator logic, tab navigation, checklist
-│   └── assets/                    # Optimized public imagery & icons
+│   ├── bookmarklet.js             # 1-click MyCase bookmarklet exporter
+│   └── app/                       # Standalone web app (mirrors extension/sidepanel/)
+│       ├── app.html               # Tabbed web app UI (parallel to sidepanel.html)
+│       ├── main.js                # Web app entry point
+│       ├── generator.js           # Web app packet generation controller
+│       ├── pdf-generator.js       # Byte-for-byte identical to extension/sidepanel/pdf-generator.js
+│       └── pdf-lib.min.js         # Vendored pdf-lib (same as extension copy)
 ├── tests/                         # Automated test suite
-│   └── eligibility.test.js        # Jest tests for IC § 35-38-9 statutory rules
+│   ├── eligibility.test.js        # 20 Jest assertions for IC § 35-38-9 statutory rules
+│   └── canary-schema.test.js      # Canary test ensuring payload schema integrity
+├── scripts/                       # Build & validation scripts
+│   ├── check-parity.js            # Enforces byte-exact equality between both pdf-generator.js trees
+│   ├── check-i18n.js              # Validates all translation keys are complete across all locales
+│   └── check-disclaimers.js       # Validates mandatory legal disclaimer IDs in both HTML files
+├── locales/                       # Internationalization translation files
 ├── archive/                       # Archived legacy components & code
 │   ├── README.md                  # Rationale and restoration documentation
 │   ├── legacy_backend/            # Archived Python FastAPI & form engine
-│   ├── legacy_python_tests/       # Archived pytest integration test suites
-│   ├── legacy_extension_monolith/ # Archived monolithic sidepanel.js script
-│   └── legacy_backend_and_monolith_archive.zip # Portable compressed archive
-├── CHROMEWEBSTORE.md              # Chrome Web Store submission metadata, assets & justifications
+│   └── legacy_extension_monolith/ # Archived monolithic sidepanel.js script
+├── AGENTS.md                      # AI agent coding rules & project constraints
+├── CHROMEWEBSTORE.md              # Chrome Web Store submission metadata & justifications
+├── formatting.md                  # Indiana Trial Rule 10 PDF formatting constraints reference
 ├── LICENSE                        # MIT License (Justin Bogner · CambrianMinds)
 ├── package.json                   # Project npm scripts & Jest test configuration
-├── .gitignore                     # Excludes local node_modules, logs, and temp files
-└── README.md                      # Public project documentation & statutory guidance
+└── README.md                      # This file
 ```
 
 ---
@@ -243,4 +384,4 @@ indiana-expungement-assistant/
 - **Developer:** Justin Bogner · [CambrianMinds](https://github.com/CambrianMinds)
 - **License:** [MIT License](LICENSE)
 
-*This project is an independent open-source initiative dedicated to promoting equal access to justice and a second chances under Indiana law.*
+*This project is an independent open-source initiative dedicated to promoting equal access to justice and a second chance under Indiana law.*
