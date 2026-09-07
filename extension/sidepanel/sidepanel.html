@@ -42,6 +42,23 @@
         <span style="margin-right:4px;font-size:1rem;">🌐</span>
         <span class="lang-toggle-text">EN</span>
       </button>
+      <!-- Theme Toggle Button -->
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light color mode" title="Toggle dark/light color mode">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.93 4.93 1.41 1.41" />
+          <path d="m17.66 17.66 1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.34 17.66-1.41 1.41" />
+          <path d="m19.07 4.93-1.41 1.41" />
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3a6 6 0 0 0 9 9 9 0 1 1-9-9Z" />
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -183,7 +200,7 @@
         <p><b>Multi-Search Tip:</b> Search MyCase for your maiden name, previous married names, other counties, or aliases, and scan each page. They will automatically accumulate into one lifetime expungement petition.</p>
       </div>
 
-      <div class="scan-progress" id="scanProgress" style="display:none">
+      <div class="scan-progress" id="scanProgress" style="display:none" role="status" aria-live="polite" aria-atomic="true">
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill"></div>
         </div>
@@ -663,11 +680,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- ═══ Modal: Scraper Parity Check (shown after each scan) ═══ -->
-  <div class="modal-overlay" id="parityModal" style="display:none">
+  <div class="modal-overlay" id="parityModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="parityModalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-icon-alert">🔍</div>
-        <h3>Verify Extracted Cases</h3>
+        <h3 id="parityModalTitle">Verify Extracted Cases</h3>
       </div>
       <div class="modal-body">
         <p class="modal-lead">
@@ -708,11 +725,11 @@
   </div>
 
   <!-- ═══ Modal: Final One-Shot Confirmation ═══ -->
-  <div class="modal-overlay" id="confirmModal" style="display:none">
+  <div class="modal-overlay" id="confirmModal" style="display:none" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-icon-alert">🛑</div>
-        <h3>Final Confirmation: Lifetime One-Shot Rule</h3>
+        <h3 id="confirmModalTitle">Final Confirmation: Lifetime One-Shot Rule</h3>
       </div>
       <div class="modal-body">
         <p class="modal-lead">
@@ -750,11 +767,11 @@
   </div>
 
   <!-- ═══ Modal: Manual Case Entry ═══ -->
-  <div class="modal-overlay" id="manualEntryModal" style="display:none">
+  <div class="modal-overlay" id="manualEntryModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="manualEntryModalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-icon-alert">✍️</div>
-        <h3>Add Case Manually</h3>
+        <h3 id="manualEntryModalTitle">Add Case Manually</h3>
       </div>
       <div class="modal-body">
         <p class="modal-lead">Enter case details if the MyCase scraper failed to extract them.</p>
@@ -791,11 +808,11 @@
   </div>
 
   <!-- ═══ Modal: Full Legal Notice & Mission ═══ -->
-  <div class="modal-overlay" id="legalNoticeModal" style="display:none">
+  <div class="modal-overlay" id="legalNoticeModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="legalNoticeModalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-icon-alert">⚖️</div>
-        <h3>Legal Notice, Mission &amp; Disclaimers</h3>
+        <h3 id="legalNoticeModalTitle">Legal Notice, Mission &amp; Disclaimers</h3>
       </div>
       <div class="modal-body modal-scrollable">
         <h4>Why This Project Exists</h4>

@@ -2263,26 +2263,124 @@ select.is-invalid {
 }
 
 
- . l a n g - t o g g l e   { 
-     d i s p l a y :   f l e x ; 
-     a l i g n - i t e m s :   c e n t e r ; 
-     b a c k g r o u n d :   n o n e ; 
-     b o r d e r :   n o n e ; 
-     c u r s o r :   p o i n t e r ; 
-     c o l o r :   v a r ( - - t e x t - s e c o n d a r y ) ; 
-     f o n t - s i z e :   0 . 8 5 r e m ; 
-     f o n t - w e i g h t :   5 0 0 ; 
-     p a d d i n g :   0   8 p x ; 
-     b o r d e r - r a d i u s :   1 5 p x ; 
-     b o r d e r :   1 p x   s o l i d   v a r ( - - b o r d e r - s u b t l e ) ; 
-     b a c k g r o u n d - c o l o r :   v a r ( - - c o l o r - s u r f a c e - s u b t l e ) ; 
-     h e i g h t :   3 0 p x ; 
-     m a r g i n - l e f t :   8 p x ; 
- } 
- . l a n g - t o g g l e : h o v e r   { 
-     b a c k g r o u n d - c o l o r :   v a r ( - - c o l o r - s u r f a c e ) ; 
-     b o r d e r - c o l o r :   v a r ( - - c o l o r - b l u e - 6 0 0 ) ; 
-     c o l o r :   v a r ( - - c o l o r - b l u e - 6 0 0 ) ; 
- } 
-  
- 
+
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0 8px;
+  border-radius: 15px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--color-surface-subtle);
+  height: 30px;
+  margin-left: 8px;
+}
+.lang-toggle:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-blue-600);
+  color: var(--color-blue-600);
+}
+
+
+/* ── Minimalist Theme Toggle ── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 30px;
+  padding: 0;
+  border-radius: 15px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--color-surface-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all var(--transition);
+  margin-left: 6px;
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-surface);
+  border-color: var(--color-blue-600);
+  color: var(--color-blue-600);
+}
+
+/* ── Dark Mode Design Tokens ── */
+[data-theme="dark"] {
+  --bg-canvas: #0b1120;
+  --bg-surface: #131d33;
+  --bg-subtle: #1e293b;
+  --bg-elevated: #1e293b;
+  --color-surface-subtle: #1e293b;
+  --color-surface: #131d33;
+
+  --color-navy-950: #f8fafc;
+  --color-navy-900: #f1f5f9;
+  --color-navy-800: #e2e8f0;
+  --color-blue-700: #3b82f6;
+  --color-blue-600: #60a5fa;
+  --color-blue-50: rgba(59, 130, 246, 0.15);
+
+  --color-gold-700: #f59e0b;
+  --color-gold-600: #fbbf24;
+  --color-gold-500: #fcd34d;
+  --color-gold-50: rgba(245, 158, 11, 0.15);
+
+  --color-emerald-800: #10b981;
+  --color-emerald-700: #34d399;
+  --color-emerald-600: #6ee7b7;
+  --color-emerald-50: rgba(16, 185, 129, 0.15);
+
+  --color-burgundy-800: #ef4444;
+  --color-burgundy-700: #f87171;
+  --color-burgundy-600: #fca5a5;
+  --color-burgundy-50: rgba(239, 68, 68, 0.15);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  --text-inverse: #0f172a;
+
+  --border-subtle: #334155;
+  --border-medium: #475569;
+  --border-focus: #60a5fa;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .app-header {
+  background-color: var(--bg-surface);
+  border-bottom-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .tab-panel,
+[data-theme="dark"] .card,
+[data-theme="dark"] .modal-dialog {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-group textarea {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+

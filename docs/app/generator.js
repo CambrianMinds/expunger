@@ -157,7 +157,7 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       ? countySelectDropdown.value
       : null;
 
-    let targetCountyCheck = null;
+    let targetCountyCheck;
     if (selectedCountyCode && AppState.currentReport.counties[selectedCountyCode]) {
       targetCountyCheck = AppState.currentReport.counties[selectedCountyCode];
     } else {
@@ -214,6 +214,9 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         if (!confirm(warningMsg)) {
           return;
         }
+      }
+    }
+
     // Audit for unpaid restitution or court balance due (IC § 35-38-9 requirement)
     const casesWithUnpaidFees = casesForValidation.filter(c => {
       const bal = c.financials?.balanceDue || c.ccs?.financials?.balanceDue || 0;

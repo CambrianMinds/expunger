@@ -148,7 +148,7 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       ? countySelectDropdown.value
       : null;
 
-    let targetCountyCheck = null;
+    let targetCountyCheck;
     if (selectedCountyCode && AppState.currentReport.counties[selectedCountyCode]) {
       targetCountyCheck = AppState.currentReport.counties[selectedCountyCode];
     } else {

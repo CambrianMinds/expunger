@@ -29,10 +29,62 @@ function setupGuideListeners() {
   document.getElementById('btnOpenGuideBanner')?.addEventListener('click', openGuide);
 }
 
+// Setup theme toggle listener with chrome.storage.local persistence
+async function setupThemeToggle() {
+  const toggleBtn = document.getElementById('themeToggle');
+  if (!toggleBtn) return;
+
+  function getActiveTheme() {
+    return document.documentElement.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+
+  async function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('theme', theme);
+      if (chrome?.storage?.local) {
+        await chrome.storage.local.set({ theme });
+      }
+    } catch (_) {}
+    toggleBtn.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+    toggleBtn.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`;
+  }
+
+  try {
+    let savedTheme = localStorage.getItem('theme');
+    if (!savedTheme && chrome?.storage?.local) {
+      const stored = await chrome.storage.local.get('theme');
+      if (stored?.theme) savedTheme = stored.theme;
+    }
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+  } catch (_) {}
+
+  toggleBtn.addEventListener('click', async () => {
+    const current = getActiveTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    await setTheme(next);
+  });
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
+    let hasSaved = localStorage.getItem('theme');
+    if (!hasSaved && chrome?.storage?.local) {
+      const stored = await chrome.storage.local.get('theme');
+      if (stored?.theme) hasSaved = stored.theme;
+    }
+    if (!hasSaved) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
+}
+
 // ─── Initialization ────────────────────────────────────────────────
 async function init() {
-  // Bind guide actions and check first-open onboarding
+  // Bind guide and theme actions
   setupGuideListeners();
+  await setupThemeToggle();
   await checkWelcomeGuide();
 
   // Load saved state & bind formatters

@@ -521,6 +521,13 @@ function buildForm00(ctx, payload) {
   ctx.drawSingleSpacedParagraph(
     '6. Fillable Fields & Signatures: Any field left blank can be filled directly in this PDF before filing or printed and signed. If you selected the e-sign option, your "/s/" signature is already affixed and the documents are ready for upload.'
   );
+  ctx.drawHeading('CRITICAL PRE-FILING SIGNATURE & INK CHECKLIST:');
+  ctx.drawSingleSpacedParagraph('  [ ] Print the complete packet single-sided on standard 8.5 x 11 inch white paper.');
+  ctx.drawSingleSpacedParagraph('  [ ] If not electronically signed ("/s/"), sign ALL signature lines in permanent BLACK or BLUE INK.');
+  ctx.drawSingleSpacedParagraph('  [ ] Verify Form 04 (Verified Petition) is signed under the Penalties of Perjury (Trial Rule 11).');
+  ctx.drawSingleSpacedParagraph('  [ ] Retain at least one full signed copy for your personal records before filing.');
+  ctx.drawSingleSpacedParagraph('  [ ] Present original signed pleadings to the Court Clerk (or upload certified signed scans if e-filing).');
+
   ctx.drawHeading('AFTER THE JUDGE SIGNS: POST-ORDER DISTRIBUTION REQUIREMENTS');
   ctx.drawDoubleSpacedParagraph(
     'Obtaining the signed order is only the beginning. Under Indiana Code § 35-38-9-6 and § 35-38-9-7, ' +

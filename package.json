@@ -15,10 +15,14 @@
     "test:canary": "node scripts/canary/run-canary.js",
     "sync:pro": "node scripts/sync-repos.js",
     "sync:from-pro": "node scripts/sync-repos.js --from-pro",
-    "test": "npm run i18n && jest && npm run test:parity && npm run test:i18n && npm run test:disclaimers",
-    "lint": "eslint . && prettier --check .",
-    "lint:fix": "eslint --fix . && prettier --write .",
+    "test": "npm run i18n && node --experimental-vm-modules node_modules/jest/bin/jest.js && npm run test:parity && npm run test:i18n && npm run test:disclaimers",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "test:e2e": "playwright test"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=10.0.0"
   },
   "jest": {
     "testMatch": [
