@@ -485,6 +485,20 @@
         </p>
       </div>
 
+      <!-- Prior Filings Check -->
+      <div class="prior-filings-box" style="margin-bottom: 24px; padding: 16px; background-color: var(--bg-card-elevated); border: 1px solid var(--border-color); border-radius: 8px;">
+        <h5 style="margin-top: 0; margin-bottom: 12px;">Prior County Filings (365-Day Rule Check)</h5>
+        <p style="font-size: 0.9rem; margin-bottom: 12px;">Have you filed an expungement petition in <b>any other Indiana county</b> within the past 12 months?</p>
+        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+          <label><input type="radio" name="hasPriorFiling" value="no" checked> No</label>
+          <label><input type="radio" name="hasPriorFiling" value="yes"> Yes</label>
+        </div>
+        <div id="priorFilingDateBox" style="display: none;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 4px;">Date of First Filing:</label>
+          <input type="date" id="priorFilingDate" class="input-field" style="width: 200px;">
+        </div>
+      </div>
+
       <!-- Mandatory Pro Se Acknowledgments -->
       <div class="acknowledgment-card">
         <div class="ack-card-header">

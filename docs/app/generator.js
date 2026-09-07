@@ -105,6 +105,16 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
     });
   });
 
+  // Prior Filings Radio Listeners
+  document.querySelectorAll('input[name="hasPriorFiling"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const box = $('#priorFilingDateBox');
+      if (box) {
+        box.style.display = e.target.value === 'yes' ? 'block' : 'none';
+      }
+    });
+  });
+
 
   // ─── Generate Packet Trigger ───────────────────────────────────────
   $('#btnGenerate').addEventListener('click', () => {
@@ -122,6 +132,36 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
     if (AppState.currentReport.crossCountyBlock) {
       showToast('Cannot generate: Multi-county petitions must be filed within 365 days of each other (IC § 35-38-9-9(d)). Adjust dates or exclude cases.', 'error', 6000);
       return;
+    }
+
+    // Prior Filings 365-Day Enforcement
+    const priorFilingYes = document.querySelector('input[name="hasPriorFiling"]:checked')?.value === 'yes';
+    if (priorFilingYes) {
+      const priorDateStr = $('#priorFilingDate')?.value;
+      if (!priorDateStr) {
+        showToast('Please enter the date of your prior county expungement filing.', 'error');
+        return;
+      }
+      const priorDate = new Date(priorDateStr);
+      const today = new Date();
+      const diffTime = today.getTime() - priorDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      if (diffDays < 0) {
+        showToast('Prior filing date cannot be in the future.', 'error');
+        return;
+      }
+      
+      if (diffDays > 365) {
+        showToast('Cannot generate: Your 365-day window to file in multiple counties has expired (IC § 35-38-9-9(d)).', 'error', 7000);
+        return;
+      }
+      
+      // Calculate remaining days for warning
+      const daysRemaining = 365 - diffDays;
+      if (!confirm(`WARNING: You have exactly ${daysRemaining} days remaining to file this packet with the clerk to comply with the 365-day rule. Proceed?`)) {
+        return;
+      }
     }
 
     const acksReady = $('#ackOneShot')?.checked &&
@@ -178,6 +218,18 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       
       if (AppState.currentReport.crossCountyBlock) {
         throw new Error('Cannot generate: Multi-county petitions must be filed within 365 days of each other (IC § 35-38-9-9(d)).');
+      }
+
+      // Re-verify the prior filings check to ensure safety in executePacketGeneration
+      const priorFilingYesEx = document.querySelector('input[name="hasPriorFiling"]:checked')?.value === 'yes';
+      if (priorFilingYesEx) {
+        const priorDateStr = $('#priorFilingDate')?.value;
+        if (!priorDateStr) throw new Error('Please enter the date of your prior county expungement filing.');
+        const priorDate = new Date(priorDateStr);
+        const diffDays = Math.floor((new Date().getTime() - priorDate.getTime()) / (1000 * 60 * 60 * 24)); 
+        if (diffDays > 365) {
+          throw new Error('Cannot generate: Your 365-day window to file in multiple counties has expired (IC § 35-38-9-9(d)).');
+        }
       }
 
       // Determine target county (supports multi-county filing selection)
