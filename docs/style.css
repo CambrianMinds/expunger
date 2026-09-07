@@ -2373,6 +2373,7 @@ body {
   box-shadow: 0 4px 12px rgba(10, 17, 40, 0.35);
   border: 1px solid var(--color-gold-400);
   transition: all var(--transition);
+  -webkit-user-select: none;
   user-select: none;
 }
 

@@ -359,7 +359,7 @@
         <div class="form-grid-layout">
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerName" data-i18n="lbl_full_name">Full Legal Name *</label>
+              <label for="fullName" data-i18n="lbl_full_name">Full Legal Name *</label>
               <span class="field-hint">First, Middle, Last</span>
             </div>
             <input type="text" id="fullName" placeholder="e.g. Jane Marie Doe" autocomplete="name" required>
@@ -368,7 +368,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerAliases" data-i18n="lbl_other_names">Other Legal Names / Maiden Names / Aliases</label>
+              <label for="aliases" data-i18n="lbl_other_names">Other Legal Names / Maiden Names / Aliases</label>
               <span class="field-hint">IC § 35-38-9-8(b)(1)</span>
             </div>
             <input type="text" id="aliases" placeholder="e.g. Jane Smith, Jane Johnson (comma separated)">
@@ -377,7 +377,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerDob" data-i18n="lbl_dob">Date of Birth *</label>
+              <label for="dob" data-i18n="lbl_dob">Date of Birth *</label>
             </div>
             <input type="date" id="dob" required>
             <span class="field-error" id="err-dob"></span>
@@ -385,7 +385,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerSsn" data-i18n="lbl_ssn">Social Security Number *</label>
+              <label for="ssn" data-i18n="lbl_ssn">Social Security Number *</label>
               <button type="button" class="btn-toggle-mask" id="btnToggleSSN" title="Show/hide SSN">👁</button>
             </div>
             <input type="password" id="ssn" placeholder="XXX-XX-XXXX" maxlength="14" autocomplete="off" required>
@@ -394,7 +394,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerDln" data-i18n="lbl_dln">Indiana Driver's License / ID #</label>
+              <label for="driverLicense" data-i18n="lbl_dln">Indiana Driver's License / ID #</label>
               <span class="field-hint">XXXX-XX-XXXX (10 digits)</span>
             </div>
             <input type="text" id="driverLicense" placeholder="e.g. 1234-56-7890" maxlength="12">
@@ -403,7 +403,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerAddress" data-i18n="lbl_street">Current Street Address *</label>
+              <label for="streetAddress" data-i18n="lbl_street">Current Street Address *</label>
               <span class="field-hint">House #, Street, Apt/Suite</span>
             </div>
             <input type="text" id="streetAddress" placeholder="e.g. 100 N Senate Ave, Apt 4B" autocomplete="street-address" required>
@@ -412,7 +412,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerCity" data-i18n="lbl_city">City *</label>
+              <label for="city" data-i18n="lbl_city">City *</label>
             </div>
             <input type="text" id="city" placeholder="Indianapolis" autocomplete="address-level2" required>
             <span class="field-error" id="err-city"></span>
@@ -421,9 +421,9 @@
           <div class="form-group-split">
             <div class="form-group" style="flex: 1;">
               <div class="label-row">
-                <label for="petitionerState" data-i18n="lbl_state">State *</label>
+                <label for="state" data-i18n="lbl_state">State *</label>
               </div>
-              <select id="state" autocomplete="address-level1" required>
+              <select id="state" title="State" autocomplete="address-level1" required>
                 <option value="IN" selected>IN</option>
                 <option value="IL">IL</option>
                 <option value="KY">KY</option>
@@ -436,7 +436,7 @@
             </div>
             <div class="form-group" style="flex: 1.5;">
               <div class="label-row">
-                <label for="petitionerZip" data-i18n="lbl_zip">ZIP Code *</label>
+                <label for="zipCode" data-i18n="lbl_zip">ZIP Code *</label>
               </div>
               <input type="text" id="zipCode" placeholder="46204" maxlength="10" autocomplete="postal-code" required>
               <span class="field-error" id="err-zipCode"></span>
@@ -445,7 +445,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerPhone" data-i18n="lbl_phone">Phone Number</label>
+              <label for="phone" data-i18n="lbl_phone">Phone Number</label>
               <span class="field-hint">(XXX) XXX-XXXX</span>
             </div>
             <input type="tel" id="phone" placeholder="(317) 555-0100" maxlength="14">
@@ -454,7 +454,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="petitionerEmail" data-i18n="lbl_email">Email Address</label>
+              <label for="email" data-i18n="lbl_email">Email Address</label>
             </div>
             <input type="email" id="email" placeholder="name@example.com">
             <span class="field-error" id="err-email"></span>
