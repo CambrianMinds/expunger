@@ -8,7 +8,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jest",
+    "test:parity": "node scripts/check-parity.js",
+    "test": "jest && npm run test:parity",
     "test:canary": "node scripts/canary/run-canary.js"
   },
   "jest": {

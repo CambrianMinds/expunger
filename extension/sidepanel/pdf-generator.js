@@ -449,7 +449,11 @@ class PdfContext {
     this.drawText('Respectfully submitted,', 72, this.cursorY, 12, 'regular');
     this.cursorY -= 36; // Blank vertical space for ink signature
 
-    // Physical signature line (strictly blank for physical handwritten signature)
+    if (this.isEsign) {
+      this.drawText(`/s/ ${nameUpper}`, 72, this.cursorY + 6, 11, 'italic');
+    }
+
+    // Physical signature line (strictly blank for physical handwritten signature unless e-signed)
     this.drawLine(72, this.cursorY, 320, this.cursorY, 0.75, this.colors.black);
 
     // Printed name and title underneath the line
@@ -459,7 +463,14 @@ class PdfContext {
     // Date line with optional fillable text field
     this.drawText('Date:', 72, this.cursorY - 46, 11, 'regular');
     this.drawLine(108, this.cursorY - 46, 250, this.cursorY - 46, 0.5, this.colors.black);
-    this.addTextField(`${fieldPrefix}_date`, 108, this.cursorY - 50, 142, 18, '', { fontSize: 10 });
+    
+    if (this.isEsign) {
+      const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      this.drawText(today, 112, this.cursorY - 44, 11, 'regular');
+    } else {
+      this.addTextField(`${fieldPrefix}_date`, 108, this.cursorY - 50, 142, 18, '', { fontSize: 10 });
+    }
+    
     this.cursorY -= 64;
   }
 
@@ -493,19 +504,22 @@ function buildForm00(ctx, payload) {
 
   ctx.drawHeading('STEP-BY-STEP ODYSSEY E-FILING GUIDE (CASE TYPE: XP)');
   ctx.drawSingleSpacedParagraph(
-    '1. Case Type: Select "XP - Expungement Petition" when initiating your new civil case in the Odyssey E-Filing System (IEFS).'
+    '1. EFSP Providers: You must use a state-approved Electronic Filing Service Provider (EFSP) like Odyssey eFileIN or InfoTrack to file. You cannot upload these directly to MyCase.'
   );
   ctx.drawSingleSpacedParagraph(
-    '2. Lead Document: Upload Form 04 (Verified Petition) as your Lead Document, and attach Form 01 (Appearance) as a secondary filing.'
+    '2. Case Type: Select "XP - Expungement Petition" when initiating your new civil case in the Odyssey E-Filing System (IEFS).'
   );
   ctx.drawSingleSpacedParagraph(
-    '3. Confidential Documents: Form 02 (Form ACR) and Form 03 (Confidential Information Sheet) MUST be marked as "Confidential" in the e-filing system.'
+    '3. Lead Document: Upload Form 04 (Verified Petition) as your Lead Document, and attach Form 01 (Appearance) as a secondary filing.'
   );
   ctx.drawSingleSpacedParagraph(
-    '4. Service Requirements (IC § 35-38-9-8(e)): Serve copies on the County Prosecutor, Indiana State Police, BMV, and arresting agencies.'
+    '4. Confidential Documents: Form 02 (Form ACR) and Form 03 (Confidential Information Sheet) MUST be marked as "Confidential" in the e-filing system.'
   );
   ctx.drawSingleSpacedParagraph(
-    '5. Fillable Fields: Any field left blank can be filled directly in this PDF before filing or printed and signed.'
+    '5. Service Requirements (IC § 35-38-9-8(e)): Serve copies on the County Prosecutor, Indiana State Police, BMV, and arresting agencies.'
+  );
+  ctx.drawSingleSpacedParagraph(
+    '6. Fillable Fields & Signatures: Any field left blank can be filled directly in this PDF before filing or printed and signed. If you selected the e-sign option, your "/s/" signature is already affixed and the documents are ready for upload.'
   );
 }
 
@@ -984,6 +998,7 @@ export async function generateCompletePacket(payload) {
   };
 
   const ctx = new PdfContext(pdfDoc, { regular: regularFont, bold: boldFont, italic: italicFont }, colors);
+  ctx.isEsign = payload.eSignDocuments || false;
 
   // 1. Instructions & Warnings Cover Sheet
   ctx.startDocument('Form 00');
@@ -1074,6 +1089,8 @@ export async function generateAppearanceForm(payload) {
   };
 
   const ctx = new PdfContext(pdfDoc, { regular: regularFont, bold: boldFont, italic: italicFont }, colors);
+  ctx.isEsign = payload.eSignDocuments || false;
+  
   ctx.startDocument('Form 01');
   buildForm01(ctx, payload);
   ctx.endDocument();

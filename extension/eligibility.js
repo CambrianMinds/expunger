@@ -75,6 +75,10 @@ const IndianaExpungement = (() => {
     'SEX OFFENDER REGISTRY',
     // IC § 35-38-9-2(b) exclusions (sex offenses, violent offenses resulting in death)
     'CAUSING DEATH WHEN OPERATING',
+    // IC § 35-38-9-3(b)(2) additional exclusions
+    'PERJURY',
+    'OBSTRUCTION OF JUSTICE',
+    'DOMESTIC BATTERY RESULTING IN SERIOUS BODILY INJURY',
   ];
 
   // Offenses that suggest bodily injury (affects § 3 eligibility)
@@ -258,6 +262,9 @@ const IndianaExpungement = (() => {
 
     // IC § 35-38-9-1: Arrests, non-convictions, infractions
     if (typeInfo && (typeInfo.level === 'infraction' || typeInfo.level === 'miscellaneous_criminal')) {
+      if (typeInfo.level === 'miscellaneous_criminal') {
+        result.warnings.push('MC (Miscellaneous Criminal) cases may involve misdemeanor convictions. If you were convicted in this case, it must be filed under § 2 (5-year wait) instead of § 1 (1-year wait). Verify the final disposition.');
+      }
       result.statute = 'IC § 35-38-9-1';
       result.statuteLabel = 'Arrest/Infraction Expungement (§ 1)';
       result.waitingPeriod = 1;

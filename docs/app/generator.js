@@ -216,6 +216,7 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
         cases: eligibleCases,
         includeFeeWaiver: $('#includeFeeWaiver')?.checked ?? true,
         includeAddressSupplement: $('#includeAddressSupplement')?.checked ?? true,
+        eSignDocuments: $('#eSignDocuments')?.checked ?? false,
         acknowledgedOneShot: $('#ackOneShot')?.checked ?? true,
         acknowledgedNotLawyer: $('#ackNotLawyer')?.checked ?? true,
         acknowledgedAllCases: $('#ackAllCounties')?.checked ?? true,

@@ -29,7 +29,7 @@
 >
 > However, navigating complex local court rules and formatting formal legal pleadings is daunting. Private defense attorneys frequently charge **$1,500 to $3,500** for routine expungement petitions, placing second chances out of reach for working-class citizens.
 >
-> This open-source tool was designed and developed by **Justin Bogner** (an independent software developer, **Justin Bogner**) as a civic public service project to democratize access to standard Indiana court forms.
+> This open-source tool was designed and developed by **Justin Bogner** (an independent software developer) as a civic public service project to democratize access to standard Indiana court forms.
 >
 > **Strict Legal Disclaimers:**
 >
@@ -137,7 +137,7 @@ This is the easiest method. It works in any modern browser (Chrome, Edge, Safari
 2. Drag and drop your downloaded `mycase-expungement-data.json` file into the upload area.
 3. Review your statutory eligibility on the **Results** tab.
 4. Fill out your legal identifiers on the **Profile** tab.
-5. On the **Generate** tab, acknowledge the legal disclaimers and click **Generate Complete Petition Packet**. The tool will generate your 14-page, 10-pleading court-ready PDF.
+5. On the **Generate** tab, acknowledge the legal disclaimers and click **Generate Complete Petition Packet**. The tool will generate your 10-pleading court-ready PDF (typically 12–18 pages depending on case count).
 
 ---
 
@@ -190,7 +190,7 @@ npm install
 
 # Run the statutory test suite
 npm test
-```text
+```
 
 ---
 
