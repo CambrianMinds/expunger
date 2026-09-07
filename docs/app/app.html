@@ -70,15 +70,20 @@
           <span>←</span> Portal Home
         </a>
         <button class="nav-github-btn" id="btnUserGuide" title="Open Step-by-Step Instructions &amp; Guide">
-          <span>📖</span> Guide
+          <span>📖</span> <span data-i18n="nav_guide">Guide</span>
         </button>
         <button class="nav-github-btn" id="btnLegalNotice" title="View Legal Disclaimer &amp; One-Shot Warning">
-          <span>⚖️</span> Legal Notice
+          <span>⚖️</span> <span data-i18n="nav_legal">Legal Notice</span>
         </button>
         <div class="header-status" id="backendStatus" role="button" tabindex="0" title="In-Browser PDF Generator is active and ready">
           <span class="status-dot online"></span>
-          <span class="status-label">Engine Ready</span>
+          <span class="status-label" data-i18n="status_ready">Engine Ready</span>
         </div>
+        <!-- Language Toggle Button -->
+        <button class="lang-toggle" aria-label="Toggle language" title="Change Language">
+          <span style="margin-right:2px;">🌐</span>
+          <span class="lang-toggle-text">EN</span>
+        </button>
         <!-- Theme Toggle Button -->
         <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light color mode" title="Toggle dark/light color mode">
           <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -108,20 +113,20 @@
       <div class="container tab-nav-container">
         <button class="tab-btn active" data-tab="scan" id="tabBtnImport">
           <span class="tab-step">01</span>
-          <span class="tab-text">Import Records</span>
+          <span class="tab-text" data-i18n="tab_import">Import Records</span>
         </button>
         <button class="tab-btn" data-tab="results" id="tabBtnResults">
           <span class="tab-step">02</span>
-          <span class="tab-text">Results &amp; Eligibility</span>
+          <span class="tab-text" data-i18n="tab_results">Results &amp; Eligibility</span>
           <span class="tab-badge" id="resultsBadge" style="display:none">0</span>
         </button>
         <button class="tab-btn" data-tab="profile" id="tabBtnProfile">
           <span class="tab-step">03</span>
-          <span class="tab-text">Petitioner Profile</span>
+          <span class="tab-text" data-i18n="tab_profile_app">Petitioner Profile</span>
         </button>
         <button class="tab-btn" data-tab="generate" id="tabBtnGenerate">
           <span class="tab-step">04</span>
-          <span class="tab-text">Generate Pleadings</span>
+          <span class="tab-text" data-i18n="tab_generate_app">Generate Pleadings</span>
         </button>
       </div>
     </nav>
@@ -166,8 +171,8 @@
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
             </div>
-            <h2 class="dropzone-title">Upload Indiana MyCase Records</h2>
-            <p class="dropzone-subtitle">Drag and drop your saved MyCase <b>HTML</b> or <b>JSON</b> files here, or select files from your device</p>
+            <h3 data-i18n="import_title">Upload Indiana MyCase Records</h3>
+            <p data-i18n="import_desc">Drag and drop your saved MyCase HTML or JSON files here, or select files from your device</p>
             <p class="dropzone-hint">You can upload multiple files at once to combine records across different counties or name searches</p>
 
             <div class="dropzone-actions">
@@ -193,8 +198,8 @@
         <!-- Collapsible Paste Drawer -->
         <div class="paste-container" id="pasteContainer" style="display: none;">
           <div class="paste-header">
-            <h4>Paste MyCase Page Source or JSON</h4>
-            <p>Paste the HTML page source (Ctrl+U / Cmd+Option+U on MyCase) or exported JSON text below:</p>
+            <h4 data-i18n="import_paste_title">Paste MyCase Page Source or JSON</h4>
+            <p data-i18n="import_paste_desc">Paste the HTML page source (Ctrl+U / Cmd+Option+U on MyCase) or exported JSON text below:</p>
           </div>
           <textarea id="pasteInput" class="paste-textarea" placeholder="Paste HTML source or JSON text here..."></textarea>
           <div class="paste-actions">
@@ -345,16 +350,16 @@
 
     <!-- ═══ Tab 3: Petitioner Profile ═══ -->
     <section class="tab-panel" id="tab-profile">
-      <div class="profile-header">
-        <h3>Petitioner Information</h3>
-        <p class="profile-desc">Required for your verified court petition and confidential case information sheet (Form ACR). All information is stored only in your browser.</p>
+      <div class="generate-hero">
+        <h3 data-i18n="prof_title">Petitioner Information</h3>
+        <p data-i18n="prof_desc">Required for your verified court petition and confidential case information sheet (Form ACR). All information is stored only in your browser.</p>
       </div>
 
       <form class="profile-form" id="profileForm" novalidate>
         <div class="form-grid-layout">
           <div class="form-group">
             <div class="label-row">
-              <label for="fullName">Full Legal Name <span class="req-star">*</span></label>
+              <label for="petitionerName" data-i18n="lbl_full_name">Full Legal Name *</label>
               <span class="field-hint">First, Middle, Last</span>
             </div>
             <input type="text" id="fullName" placeholder="e.g. Jane Marie Doe" autocomplete="name" required>
@@ -363,7 +368,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="aliases">Other Legal Names / Maiden Names / Aliases</label>
+              <label for="petitionerAliases" data-i18n="lbl_other_names">Other Legal Names / Maiden Names / Aliases</label>
               <span class="field-hint">IC § 35-38-9-8(b)(1)</span>
             </div>
             <input type="text" id="aliases" placeholder="e.g. Jane Smith, Jane Johnson (comma separated)">
@@ -372,7 +377,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="dob">Date of Birth <span class="req-star">*</span></label>
+              <label for="petitionerDob" data-i18n="lbl_dob">Date of Birth *</label>
             </div>
             <input type="date" id="dob" required>
             <span class="field-error" id="err-dob"></span>
@@ -380,7 +385,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="ssn">Social Security Number <span class="req-star">*</span></label>
+              <label for="petitionerSsn" data-i18n="lbl_ssn">Social Security Number *</label>
               <button type="button" class="btn-toggle-mask" id="btnToggleSSN" title="Show/hide SSN">👁</button>
             </div>
             <input type="password" id="ssn" placeholder="XXX-XX-XXXX" maxlength="14" autocomplete="off" required>
@@ -389,7 +394,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="driverLicense">Indiana Driver's License / ID #</label>
+              <label for="petitionerDln" data-i18n="lbl_dln">Indiana Driver's License / ID #</label>
               <span class="field-hint">XXXX-XX-XXXX (10 digits)</span>
             </div>
             <input type="text" id="driverLicense" placeholder="e.g. 1234-56-7890" maxlength="12">
@@ -398,7 +403,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="streetAddress">Current Street Address <span class="req-star">*</span></label>
+              <label for="petitionerAddress" data-i18n="lbl_street">Current Street Address *</label>
               <span class="field-hint">House #, Street, Apt/Suite</span>
             </div>
             <input type="text" id="streetAddress" placeholder="e.g. 100 N Senate Ave, Apt 4B" autocomplete="street-address" required>
@@ -407,7 +412,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="city">City <span class="req-star">*</span></label>
+              <label for="petitionerCity" data-i18n="lbl_city">City *</label>
             </div>
             <input type="text" id="city" placeholder="Indianapolis" autocomplete="address-level2" required>
             <span class="field-error" id="err-city"></span>
@@ -416,7 +421,7 @@
           <div class="form-group-split">
             <div class="form-group" style="flex: 1;">
               <div class="label-row">
-                <label for="state">State <span class="req-star">*</span></label>
+                <label for="petitionerState" data-i18n="lbl_state">State *</label>
               </div>
               <select id="state" autocomplete="address-level1" required>
                 <option value="IN" selected>IN</option>
@@ -431,7 +436,7 @@
             </div>
             <div class="form-group" style="flex: 1.5;">
               <div class="label-row">
-                <label for="zipCode">ZIP Code <span class="req-star">*</span></label>
+                <label for="petitionerZip" data-i18n="lbl_zip">ZIP Code *</label>
               </div>
               <input type="text" id="zipCode" placeholder="46204" maxlength="10" autocomplete="postal-code" required>
               <span class="field-error" id="err-zipCode"></span>
@@ -440,7 +445,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="phone">Phone Number</label>
+              <label for="petitionerPhone" data-i18n="lbl_phone">Phone Number</label>
               <span class="field-hint">(XXX) XXX-XXXX</span>
             </div>
             <input type="tel" id="phone" placeholder="(317) 555-0100" maxlength="14">
@@ -449,7 +454,7 @@
 
           <div class="form-group">
             <div class="label-row">
-              <label for="email">Email Address</label>
+              <label for="petitionerEmail" data-i18n="lbl_email">Email Address</label>
             </div>
             <input type="email" id="email" placeholder="name@example.com">
             <span class="field-error" id="err-email"></span>
@@ -457,8 +462,8 @@
         </div>
 
         <div class="form-section-header">
-          <h4>Residential Address History</h4>
-          <p>Indiana Code § 35-38-9-8(b)(3) requires listing all addresses where you have lived from the date of your earliest offense to the present.</p>
+            <h4 data-i18n="lbl_address_history">Residential Address History</h4>
+            <p class="field-desc" data-i18n="desc_address_history">Indiana Code § 35-38-9-8(b)(3) requires listing all addresses where you have lived from the date of your earliest offense to the present.</p>
         </div>
         <div id="addressHistory" class="address-list">
           <!-- Dynamically populated -->
@@ -491,17 +496,14 @@
         <div class="one-shot-header">
           <span class="one-shot-icon">🛑</span>
           <div>
-            <h4>LIFETIME ONE-SHOT EXPUNGEMENT WARNING</h4>
-            <span class="statute-tag">IC § 35-38-9-9(i)</span>
+            <h4 data-i18n="gen_warning_title">LIFETIME ONE-SHOT EXPUNGEMENT WARNING</h4>
+            <span class="badge badge-danger">IC § 35-38-9-9(i)</span>
           </div>
         </div>
-        <p class="one-shot-text">
-          <b>Indiana law allows you to expunge criminal convictions only once in your lifetime.</b>
-        </p>
-        <ul class="one-shot-bullets">
-          <li><b>Omitting any conviction is permanent:</b> Any conviction omitted from your petition can <b>never</b> be expunged later.</li>
-          <li><b>365-Day Multi-County Window (IC § 35-38-9-9(d)):</b> If you have cases in multiple Indiana counties, all petitions must be filed within <b>365 days</b>. Filing your first petition starts this window.</li>
-          <li><b>Verify All Names &amp; Counties:</b> Confirm you searched MyCase across all 92 counties under your current legal name, maiden names, prior names, and aliases.</li>
+        <ul class="warning-list">
+          <li><b data-i18n="gen_warning_desc_1">Omitting any conviction is permanent: Any conviction omitted from your petition can never be expunged later.</b></li>
+          <li data-i18n="gen_warning_desc_2"><b>365-Day Multi-County Window (IC § 35-38-9-9(d)):</b> If you have cases in multiple Indiana counties, all petitions must be filed within 365 days. Filing your first petition starts this window.</li>
+          <li data-i18n="gen_warning_desc_3"><b>Verify All Names &amp; Counties:</b> Confirm you searched MyCase across all 92 counties under your current legal name, maiden names, prior names, and aliases.</li>
         </ul>
       </div>
 
@@ -516,8 +518,8 @@
             </div>
             <p class="disclaimer-p">
               Indiana's Second Chance Law exists. The $3,000 gate in front of it doesn't have to.
-              I built this tool because that filter is a structural choice, not an inevitability. You shouldn't have to buy
-              your way back into a system you already paid for.
+              I built this tool because that filter is a structural choice, not an inevitability. You shouldn't have to
+              buy your way back into a system you already paid for.
             </p>
             <p class="disclaimer-p">
               <b>Important Notice:</b> The developer is <b>not an attorney</b> and does not provide legal representation or counsel. You are filing <b>pro se</b> (representing yourself) and are responsible for reviewing and verifying your court documents before filing.
@@ -544,23 +546,26 @@
 
             <label class="ack-item">
               <input type="checkbox" id="ackAllCounties" class="ack-checkbox">
-              <span class="ack-label">
-                <b>All Convictions &amp; Aliases Included:</b> I have searched MyCase across all 92 counties under all current and past names, and confirmed all eligible cases are accounted for.
-              </span>
+              <span class="ack-label" data-i18n="ack_all_counties_desc">
+            <b>All Charges &amp; Aliases Included:</b> I have searched MyCase for all names/aliases across all Indiana
+            counties and verified that all eligible cases are accounted for.
+          </span>
             </label>
 
             <label class="ack-item">
               <input type="checkbox" id="ackNotLawyer" class="ack-checkbox">
-              <span class="ack-label">
-                <b>Not an Attorney / Not Legal Advice:</b> I understand the author is <u>not an attorney</u> and this software is a self-help document formatter, not legal counsel or representation.
-              </span>
+              <span class="ack-label" data-i18n="ack_not_lawyer_desc">
+            <b>Not a Lawyer / Not Legal Advice:</b> I understand the creator is an <u>independent individual, NOT an
+              attorney</u>, and this software is a self-help formatting tool, not legal counsel.
+          </span>
             </label>
 
             <label class="ack-item">
               <input type="checkbox" id="ackProSe" class="ack-checkbox">
-              <span class="ack-label">
-                <b>Pro Se Responsibility &amp; Release:</b> I accept sole responsibility for reviewing, signing, and filing my court paperwork, and release the tool creator from liability.
-              </span>
+              <span class="ack-label" data-i18n="ack_pro_se_desc">
+            <b>Pro Se Responsibility &amp; Liability Release:</b> I accept full responsibility for verifying, signing,
+            and filing my documents, and release the tool creator from all liability.
+          </span>
             </label>
           </div>
 
@@ -586,15 +591,15 @@
           <div class="generate-options">
             <label class="checkbox-label">
               <input type="checkbox" id="includeFeeWaiver" checked>
-              <span>Include Fee Waiver Request (Form 08)</span>
+              <span data-i18n="label_feewaiver">Include Fee Waiver Request (Form 08)</span>
             </label>
             <label class="checkbox-label" title="Required by IC § 35-38-9-8(b). Contains SSN, DOB, and residential address history.">
               <input type="checkbox" id="includeAddressSupplement" checked disabled>
-              <span>Include Confidential Information &amp; Address Supplement (Form 03 — Required)</span>
+              <span data-i18n="label_address">Include Confidential Information &amp; Address Supplement (Form 03 — Required)</span>
             </label>
             <label class="checkbox-label">
               <input type="checkbox" id="eSignDocuments">
-              <span>Electronically sign documents (/s/ format for IEFS e-Filing)</span>
+              <span data-i18n="label_esign">Electronically sign documents (/s/ format for IEFS e-Filing)</span>
             </label>
           </div>
 
@@ -604,7 +609,7 @@
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Generate Complete Court Petition Packet (Forms 00–08)
+            <span data-i18n="btn_generate">Generate Complete Court Petition Packet (Forms 00–08)</span>
           </button>
 
           <div class="generate-status" id="generateStatus" style="display:none">
@@ -696,7 +701,7 @@
           <li>✓ All 92 Indiana counties (not just your current county)</li>
           <li>✓ Both misdemeanors and felony charges</li>
           <li>✓ Any open or pending warrants/cases</li>
-          <li>✓ <b>Strongly Recommended:</b> Obtained an official Indiana State Police (ISP) Criminal History Background Check to ensure no cases were missed</li>
+          <li>✓ <b>Recommendation Acknowledged:</b> I understand it is strongly recommended to obtain an official Indiana State Police (ISP) Criminal History Background Check to ensure no cases are missed before filing</li>
         </ul>
         <p class="modal-subtext">
           <b>Disclaimer:</b> The creator of this software is not an attorney. This is not legal advice. You are filing pro se.
@@ -761,7 +766,15 @@
   <script src="pdf-lib.min.js"></script>
   <script src="eligibility.js"></script>
   <script src="content.js"></script>
-  <script type="module" src="main.js?v=8"></script>
+  <script src="i18n.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.IndianaI18n) {
+        window.IndianaI18n.initLanguage();
+      }
+    });
+  </script>
+  <script type="module" src="main.js"></script>
 </body>
 
 </html>

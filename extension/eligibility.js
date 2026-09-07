@@ -55,30 +55,32 @@ const IndianaExpungement = (() => {
     'OV': { level: 'civil', class: null, severity: -10 },
   };
 
-  // Offenses that are NOT eligible for expungement under any section
-  const INELIGIBLE_OFFENSES = [
-    // IC § 35-38-9-3(b) exclusions
-    'OFFICIAL MISCONDUCT',
-    'MURDER',
-    'VOLUNTARY MANSLAUGHTER',
-    'INVOLUNTARY MANSLAUGHTER',
-    'RECKLESS HOMICIDE',
-    'HUMAN TRAFFICKING',
-    'CHILD MOLESTING',
-    'CHILD EXPLOITATION',
-    'CHILD SOLICITATION',
-    'RAPE',
-    'CRIMINAL DEVIATE CONDUCT',
-    'CHILD SEDUCTION',
-    'SEXUAL MISCONDUCT WITH A MINOR',
-    'INCEST',
-    'SEX OFFENDER REGISTRY',
-    // IC § 35-38-9-2(b) exclusions (sex offenses, violent offenses resulting in death)
-    'CAUSING DEATH WHEN OPERATING',
-    // IC § 35-38-9-3(b)(2) additional exclusions
-    'PERJURY',
-    'OBSTRUCTION OF JUSTICE',
-    'DOMESTIC BATTERY RESULTING IN SERIOUS BODILY INJURY',
+  // Offenses that are NOT eligible for expungement under any section (IC § 35-38-9)
+  const INELIGIBILITY_RULES = [
+    {
+      keywords: ['MURDER', 'VOLUNTARY MANSLAUGHTER', 'INVOLUNTARY MANSLAUGHTER', 'RECKLESS HOMICIDE', 'HUMAN TRAFFICKING', 'CHILD MOLESTING', 'CHILD EXPLOITATION', 'CHILD SOLICITATION', 'RAPE', 'CRIMINAL DEVIATE CONDUCT', 'CHILD SEDUCTION', 'SEXUAL MISCONDUCT WITH A MINOR', 'INCEST', 'SEX OFFENDER REGISTRY', 'OFFICIAL MISCONDUCT'],
+      rule: 'IC § 35-38-9-3(b)',
+      reason: 'Statutorily Barred Offense (Sex Offenses, Murder, Official Misconduct)',
+      description: 'The Indiana Code permanently bars this specific offense from expungement.',
+      mitigationType: 'strictly_excluded',
+      mitigationSteps: 'This offense cannot be expunged under any circumstances. A pardon from the Governor of Indiana is the only theoretical avenue for relief.'
+    },
+    {
+      keywords: ['CAUSING DEATH WHEN OPERATING', 'RESULTING IN DEATH', 'DOMESTIC BATTERY RESULTING IN SERIOUS BODILY INJURY', 'AGGRAVATED BATTERY', 'ATTEMPTED MURDER', 'SERIOUS VIOLENT FELONY'],
+      rule: 'IC § 35-38-9-5 / IC § 35-38-9-4(b)',
+      reason: 'Serious Violent Felony or Offense Resulting in Death/Serious Injury',
+      description: 'Under IC § 35-38-9-5, offenses causing death or classified as Serious Violent Felonies require prosecutorial consent.',
+      mitigationType: 'consent_required',
+      mitigationSteps: 'You may petition to expunge this offense ONLY IF you obtain written consent from the prosecuting attorney. You must contact the prosecutor\'s office before filing to negotiate consent.'
+    },
+    {
+      keywords: ['PERJURY', 'OBSTRUCTION OF JUSTICE'],
+      rule: 'IC § 35-38-9-3(b)(2)',
+      reason: 'Public Trust Offense (Perjury / Obstruction)',
+      description: 'Certain offenses against public justice are explicitly barred from standard expungement.',
+      mitigationType: 'strictly_excluded',
+      mitigationSteps: 'This offense is barred from expungement by statute.'
+    }
   ];
 
   // Offenses that suggest bodily injury (affects § 3 eligibility)
@@ -182,12 +184,18 @@ const IndianaExpungement = (() => {
   }
 
   /**
-   * Check if a charge description contains an ineligible offense.
+   * Check if a charge description falls under an ineligibility rule.
+   * Returns the rule object if matched, otherwise null.
    */
-  function isIneligibleOffense(charges) {
-    if (!charges) return false;
+  function checkIneligibility(charges) {
+    if (!charges) return null;
     const upper = charges.toUpperCase();
-    return INELIGIBLE_OFFENSES.some(offense => upper.includes(offense));
+    for (const rule of INELIGIBILITY_RULES) {
+      if (rule.keywords.some(keyword => upper.includes(keyword))) {
+        return rule;
+      }
+    }
+    return null;
   }
 
   /**
@@ -246,10 +254,20 @@ const IndianaExpungement = (() => {
     }
 
     // ── Check for ineligible offenses ──
-    if (isIneligibleOffense(charges)) {
-      result.reason = 'INELIGIBLE: Offense is statutorily excluded from expungement (e.g., sex offense, murder, official misconduct)';
-      result.statute = 'IC § 35-38-9-3(b)';
+    const ineligibilityRule = checkIneligibility(charges);
+    if (ineligibilityRule) {
+      result.reason = `INELIGIBLE: ${ineligibilityRule.reason}`;
+      result.statute = ineligibilityRule.rule;
       result.statuteLabel = 'Excluded Offense';
+      result.exclusionReason = ineligibilityRule.description;
+      result.mitigationType = ineligibilityRule.mitigationType;
+      result.mitigationSteps = ineligibilityRule.mitigationSteps;
+      
+      // If it's strictly excluded, it is definitely ineligible. 
+      // If consent required, it is technically ineligible until consent is filed, but we flag it.
+      if (ineligibilityRule.mitigationType === 'consent_required') {
+        result.warnings.push('Prosecutor consent is REQUIRED to expunge this offense.');
+      }
       return result;
     }
 
@@ -473,7 +491,7 @@ const IndianaExpungement = (() => {
     parseDate,
     extractDispositionDate,
     yearsElapsed,
-    isIneligibleOffense,
+    checkIneligibility,
     assessEligibility,
     partitionByCounty,
     analyzeAll,

@@ -791,6 +791,13 @@ function createCaseCard(caseData) {
         <span class="detail-label">Reason</span>
         <span class="detail-value">${escapeHtml(el?.reason || '')}</span>
       </div>
+      ${el?.exclusionReason ? `
+        <div class="ineligible-mitigation-box ${el.mitigationType === 'consent_required' ? 'consent-required' : 'strictly-excluded'}">
+          <div class="mitigation-title">Statutory Exclusion (IC § 35-38-9)</div>
+          <p><strong>Rule:</strong> ${escapeHtml(el.exclusionReason)}</p>
+          <p><strong>Mitigation:</strong> ${escapeHtml(el.mitigationSteps)}</p>
+        </div>
+      ` : ''}
       ${el?.warnings?.length ? `
         <div class="case-warnings">
           ${el.warnings.map(w => `<span class="warning-tag">⚠ ${escapeHtml(w)}</span>`).join('')}

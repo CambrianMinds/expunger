@@ -1,5 +1,5 @@
 import { AppState } from './state.js';
-import { $, $$, escapeHtml } from './utils.js';
+import { $, escapeHtml } from './utils.js';
 import { showToast, updateChecklist, switchTab } from './ui.js';
 
 // URL detection helper for Indiana MyCase
@@ -8,12 +8,27 @@ export function isMyCaseUrl(url) {
   return url.includes('courts.in.gov/mycase') || url.includes('mycase.in.gov');
 }
 
-// ─── Scraper Parity & Import Confirmation Modal ─────────────────────
+// ─── Scraper Parity Modal ──────────────────────────────────────────
 /**
- * Show the parity confirmation modal after importing files/data.
- * Displays the extracted cases and asks the user to verify before merging.
+ * Show the parity confirmation modal after a scan.
+ * Displays the extracted cases and asks the user to verify they match
+ * what's on screen before merging into the accumulated batch.
+ *
+ * @param {Array}  cases        - Cases scraped from this scan
+ * @param {string} searchContext - Human-readable label for this search (e.g. name/county)
+ * @param {boolean} mergeMode   - Whether merge is enabled
  */
 export function showParityModal(cases, searchContext, mergeMode) {
+  if (cases && Array.isArray(cases)) {
+    cases.forEach(c => {
+      if (c.ccs && Array.isArray(c.ccs.charges) && c.ccs.charges.length > 0) {
+        if (!c.charges || c.charges.toUpperCase().includes('SEE CCS ENTRY')) {
+          c.charges = c.ccs.charges.map(ch => `${ch.count ? 'Count ' + ch.count + ': ' : ''}${ch.offense} (${ch.level || ''})`).join('; ');
+        }
+      }
+    });
+  }
+
   AppState.pendingScanResult = { cases, searchContext, mergeMode };
 
   const countEl = $('#parityCaseCount');
@@ -24,23 +39,23 @@ export function showParityModal(cases, searchContext, mergeMode) {
   if (listEl) {
     listEl.innerHTML = '';
     if (cases.length === 0) {
-      listEl.innerHTML = '<em style="font-size:0.75rem;color:var(--text-muted)">No cases found in this upload.</em>';
+      listEl.innerHTML = '<em style="font-size:0.7rem;color:var(--text-muted)">No cases found on this page.</em>';
     } else {
-      cases.slice(0, 30).forEach(c => {
+      cases.slice(0, 20).forEach(c => {
         const item = document.createElement('div');
         item.className = 'modal-case-item';
         item.innerHTML = `
           <span class="modal-case-num">${escapeHtml(c.case_number || 'Unknown')}</span>
-          <span class="modal-case-type">${escapeHtml(c.charges || c.case_type || '')}</span>
+          <span class="modal-case-type">${escapeHtml(c.case_type || '')}</span>
         `;
         listEl.appendChild(item);
       });
-      if (cases.length > 30) {
+      if (cases.length > 20) {
         const overflow = document.createElement('div');
-        overflow.style.fontSize = '0.72rem';
+        overflow.style.fontSize = '0.68rem';
         overflow.style.color = 'var(--text-muted)';
         overflow.style.marginTop = '6px';
-        overflow.textContent = `…and ${cases.length - 30} more case${cases.length - 30 === 1 ? '' : 's'}`;
+        overflow.textContent = `…and ${cases.length - 20} more case${cases.length - 20 === 1 ? '' : 's'}`;
         listEl.appendChild(overflow);
       }
     }
@@ -50,13 +65,21 @@ export function showParityModal(cases, searchContext, mergeMode) {
   if (modal) modal.style.display = 'flex';
 }
 
+/**
+ * Called when the user clicks "Go Back & Retry" in the parity modal.
+ * Closes the modal and lets the user re-run the scan.
+ */
 $('#btnParityRetry')?.addEventListener('click', () => {
   const modal = $('#parityModal');
   if (modal) modal.style.display = 'none';
   AppState.pendingScanResult = null;
-  showToast('Import cancelled. You can select or drop other files.', 'info', 3000);
+  showToast('Re-run the scan when you\'re ready.', 'info', 3000);
 });
 
+/**
+ * Called when the user confirms the cases match what they see on screen.
+ * Merges the pending scan result into the accumulated case set.
+ */
 $('#btnParityConfirm')?.addEventListener('click', () => {
   const modal = $('#parityModal');
   if (modal) modal.style.display = 'none';
@@ -65,18 +88,10 @@ $('#btnParityConfirm')?.addEventListener('click', () => {
   const { cases: incomingCases, searchContext, mergeMode } = AppState.pendingScanResult;
   AppState.pendingScanResult = null;
 
-  if (!incomingCases || incomingCases.length === 0) return;
-
-  applyImportedCases(incomingCases, searchContext, mergeMode);
-});
-
-/**
- * Apply imported cases to AppState with de-duplication and batch merging.
- */
-export function applyImportedCases(incomingCases, searchContext = 'MyCase Import', mergeMode = true) {
-  if (!incomingCases || incomingCases.length === 0) return;
+  if (incomingCases.length === 0) return;
 
   if (mergeMode && AppState.currentCases.length > 0) {
+    // Multi-search merge & de-duplication
     const existingMap = new Map();
     AppState.currentCases.forEach(c => {
       const k = (c.case_number || '').trim().toUpperCase();
@@ -95,7 +110,7 @@ export function applyImportedCases(incomingCases, searchContext = 'MyCase Import
         if (!existing.searchQueries) {
           existing.searchQueries = existing.searchContext ? [existing.searchContext] : [];
         }
-        if (searchContext && !existing.searchQueries.includes(searchContext)) {
+        if (!existing.searchQueries.includes(searchContext)) {
           existing.searchQueries.push(searchContext);
         }
         if (!existing.charges && ic.charges) existing.charges = ic.charges;
@@ -123,12 +138,13 @@ export function applyImportedCases(incomingCases, searchContext = 'MyCase Import
 
     showToast(
       newAdded > 0
-        ? `✓ Merged ${newAdded} new cases (${overlapped} already in batch). Total: ${AppState.currentCases.length} cases.`
-        : `✓ All ${overlapped} cases were already in batch. Total: ${AppState.currentCases.length} cases.`,
+        ? `Parity confirmed. Merged ${newAdded} new cases (${overlapped} already in batch). Total: ${AppState.currentCases.length} cases.`
+        : `Parity confirmed. All ${overlapped} cases already in batch. Total: ${AppState.currentCases.length} cases.`,
       'success',
-      4500
+      5000
     );
   } else {
+    // Fresh scan (or merge disabled)
     AppState.currentCases = incomingCases;
     AppState.currentCases.forEach(c => {
       c.searchQueries = [searchContext];
@@ -142,18 +158,30 @@ export function applyImportedCases(incomingCases, searchContext = 'MyCase Import
       ? window.IndianaExpungement.analyzeAll(AppState.currentCases)
       : null;
 
-    showToast(`✓ Successfully imported ${incomingCases.length} case records.`, 'success', 4000);
+    showToast(`Parity confirmed. Found ${incomingCases.length} cases.`, 'success');
   }
 
   checkAndSuggestAlias(searchContext);
   updateBatchPanelUI();
   renderResults();
+
   persistScanResults();
+
+  const deepBtn = $('#btnDeepScrape');
+  if (deepBtn) deepBtn.disabled = false;
   switchTab('results');
   updateChecklist();
-}
+});
 
 export function persistScanResults() {
+  try {
+    chrome?.runtime?.sendMessage?.({
+      action: 'saveScanResults',
+      cases: AppState.currentCases,
+      report: AppState.currentReport,
+      searchBatches: AppState.searchBatches
+    });
+  } catch (_) {}
   try {
     localStorage.setItem('lastScanResults', JSON.stringify({
       cases: AppState.currentCases,
@@ -180,7 +208,7 @@ export function updateBatchPanelUI() {
     if (badge) badge.textContent = `${totalCases} Cases Accumulated`;
     if (pagesCount) {
       pagesCount.textContent = totalSearches > 0
-        ? `(across ${totalSearches} source file${totalSearches === 1 ? '' : 's'})`
+        ? `(across ${totalSearches} search${totalSearches === 1 ? '' : 'es'})`
         : '';
     }
 
@@ -189,7 +217,7 @@ export function updateBatchPanelUI() {
       AppState.searchBatches.forEach(b => {
         const tag = document.createElement('span');
         tag.className = 'batch-tag';
-        tag.innerHTML = `📄 ${escapeHtml(b.query)} <span class="batch-tag-count">${b.count}</span>`;
+        tag.innerHTML = `🔍 ${escapeHtml(b.query)} <span class="batch-tag-count">${b.count}</span>`;
         tagsContainer.appendChild(tag);
       });
     }
@@ -203,14 +231,14 @@ export function updateBatchPanelUI() {
   }
   if (resultsSearchesPill) {
     resultsSearchesPill.textContent = totalSearches > 0
-      ? `from ${totalSearches} import source${totalSearches === 1 ? '' : 's'}`
+      ? `from ${totalSearches} search${totalSearches === 1 ? '' : 'es'}`
       : '';
   }
 }
 
-// Clear all accumulated records
+// Clear all accumulated scans
 $('#btnClearScans')?.addEventListener('click', () => {
-  if (AppState.currentCases.length > 0 && !confirm('Clear all accumulated cases and imported searches to start fresh?')) {
+  if (AppState.currentCases.length > 0 && !confirm('Clear all accumulated cases and searches to start fresh?')) {
     return;
   }
   AppState.currentCases = [];
@@ -226,26 +254,34 @@ $('#btnClearScans')?.addEventListener('click', () => {
   if (nr) nr.style.display = 'block';
   const rb = $('#resultsBadge');
   if (rb) rb.style.display = 'none';
+  const db = $('#btnDeepScrape');
+  if (db) db.disabled = true;
   updateChecklist();
-  showToast('Accumulated cases cleared. You can upload fresh MyCase files.', 'info', 3500);
+  showToast('Accumulated cases cleared. You can start a fresh search.', 'info', 3500);
 });
 
-// Jump from Results back to Import
+// Jump from Results back to Scan to add another name / county
 $('#btnScanAnotherPage')?.addEventListener('click', () => {
   switchTab('scan');
-  showToast('💡 Upload HTML or JSON files for other maiden names, married names, or counties.', 'info', 4000);
+  showToast('💡 Search MyCase for another maiden name, married name, or county, then click Scan.', 'info', 5000);
+  const scanBtn = $('#btnScan');
+  if (scanBtn) {
+    scanBtn.scrollIntoView({ behavior: 'smooth' });
+  }
 });
 
-// Auto-suggest aliases from search queries / file names (IC § 35-38-9-8(b)(1))
+// Auto-suggest aliases from search queries (IC § 35-38-9-8(b)(1))
 function checkAndSuggestAlias(query) {
-  if (!query || query === 'MyCase Search' || query === 'MyCase Import' || query.length < 3) return;
+  if (!query || query === 'MyCase Search' || query.length < 3) return;
   const aliasesInput = $('#aliases');
   const currentAliases = (aliasesInput?.value || AppState.petitionerProfile?.aliases || '').trim();
   const fullName = ($('#fullName')?.value || AppState.petitionerProfile?.fullName || '').trim().toLowerCase();
 
-  const cleanQuery = query.replace(/\.(html?|json)$/i, '').replace(/[^\w\s,'-]/g, '').trim();
-  if (!cleanQuery || /^(case|search|mycase|export|data)/i.test(cleanQuery)) return;
+  // Clean query text
+  const cleanQuery = query.replace(/[^\w\s,'-]/g, '').trim();
+  if (!cleanQuery) return;
 
+  // If query has comma, e.g. "Smith, Jane", convert to "Jane Smith"
   let naturalName = cleanQuery;
   if (cleanQuery.includes(',')) {
     const parts = cleanQuery.split(',').map(s => s.trim());
@@ -268,356 +304,306 @@ function checkAndSuggestAlias(query) {
   }
 }
 
-// ─── HTML & JSON Parsing Logic ─────────────────────────────────────
-export function parseFileContent(text, filename = 'MyCase File') {
-  const isJson = filename.endsWith('.json') || text.trim().startsWith('{') || text.trim().startsWith('[');
+// ─── Page Status Check ─────────────────────────────────────────────
+export async function checkPageStatus() {
+  const statusDot = $('#pageStatusIndicator .status-dot');
+  const statusText = $('#pageStatusText');
+  if (!statusDot || !statusText) return false;
 
-  if (isJson) {
-    const parsed = JSON.parse(text);
-    let cases = [];
-    let searchContext = filename;
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab || !isMyCaseUrl(tab.url)) {
+      statusDot.className = 'status-dot offline';
+      statusText.textContent = 'Navigate to mycase.in.gov to begin';
+      return false;
+    }
 
-    if (Array.isArray(parsed)) {
-      cases = parsed;
-    } else if (parsed && Array.isArray(parsed.cases)) {
-      cases = parsed.cases;
-      searchContext = parsed.searchContext || filename;
-    } else if (parsed && Array.isArray(parsed.currentCases)) {
-      cases = parsed.currentCases;
-      searchContext = parsed.searchContext || filename;
+    // Try messaging the content script; reinject transparently if missing
+    let response = null;
+    try {
+      response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
+    } catch (e) {
+      if (await ensureContentScript(tab.id)) {
+        try {
+          response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
+        } catch (_) { /* fall through */ }
+      }
+    }
+
+    if (response?.isSearchResults) {
+      statusDot.className = 'status-dot online';
+      statusText.textContent = 'MyCase search results detected ✓';
+      return true;
+    } else if (response?.isCaseSummary) {
+      statusDot.className = 'status-dot checking';
+      statusText.textContent = 'On case summary page — go to search results';
+      return false;
+    } else if (response) {
+      statusDot.className = 'status-dot checking';
+      statusText.textContent = 'On MyCase — navigate to search results';
+      return false;
     } else {
-      throw new Error(`File ${filename} does not contain a recognized case array.`);
+      statusDot.className = 'status-dot offline';
+      statusText.textContent = 'Content script not loaded — refresh the MyCase page';
+      return false;
     }
-    if (cases && Array.isArray(cases)) {
-      cases.forEach(c => {
-        if (c.ccs && Array.isArray(c.ccs.charges) && c.ccs.charges.length > 0) {
-          if (!c.charges || c.charges.toUpperCase().includes('SEE CCS ENTRY')) {
-            c.charges = c.ccs.charges.map(ch => `${ch.count ? 'Count ' + ch.count + ': ' : ''}${ch.offense} (${ch.level || ''})`).join('; ');
-          }
+  } catch (e) {
+    statusDot.className = 'status-dot offline';
+    statusText.textContent = 'Content script not loaded — refresh the MyCase page';
+    return false;
+  }
+}
+
+// ─── Helper: check content script is alive on the active MyCase tab ───
+export async function ensureContentScript(tabId) {
+  try {
+    await chrome.tabs.sendMessage(tabId, { action: 'getPageStatus' });
+    return true;
+  } catch (e) {
+    // Content script missing — try to reinject via scripting API
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['eligibility.js', 'content.js']
+      });
+      // Poll until the content script's message listener is ready, or give up after ~3s
+      const maxAttempts = 15;
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise(r => setTimeout(r, 200));
+        try {
+          await chrome.tabs.sendMessage(tabId, { action: 'getPageStatus' });
+          return true; // Content script is ready and responding
+        } catch (_) {
+          // Not ready yet — loop will retry
         }
-      });
-    }
-
-    return { cases, searchContext };
-  }
-
-  // HTML Parsing
-  const parser = new DOMParser();
-  const parsedDoc = parser.parseFromString(text, 'text/html');
-
-  // Strategy 1: Check using MyCaseScraper if available
-  if (window.MyCaseScraper) {
-    if (window.MyCaseScraper.isSearchResultsPage(parsedDoc)) {
-      const cases = window.MyCaseScraper.scrapeSearchResults(parsedDoc);
-      const searchContext = window.MyCaseScraper.getSearchContext(parsedDoc) || filename;
-      return { cases, searchContext };
-    }
-
-    if (window.MyCaseScraper.isCaseSummaryPage(parsedDoc)) {
-      // Single CCS case view
-      const caseNumEl = parsedDoc.querySelector('.case-number, .header-case-number, h2, h3');
-      const caseNumber = caseNumEl ? caseNumEl.textContent.replace(/case\s*(number|#)?\s*[:\-]?\s*/gi, '').trim() : '';
-      const ccsData = window.MyCaseScraper._parseCCSHtml ? window.MyCaseScraper._parseCCSHtml(text) : null;
-      const charges = ccsData?.charges?.map(c => `${c.count ? 'Count ' + c.count + ': ' : ''}${c.offense} (${c.level || ''})`).join('; ') || 'See CCS';
-      
-      const singleCase = {
-        case_number: caseNumber || 'UNKNOWN-CASE',
-        case_type: 'Criminal Case',
-        charges: charges,
-        filed: '',
-        court: parsedDoc.querySelector('.court-name, .header-court')?.textContent?.trim() || '',
-        status: 'Disposed',
-        ccs: ccsData
-      };
-      return { cases: [singleCase], searchContext: caseNumber || filename };
+      }
+      console.warn(`ensureContentScript: content script did not respond after ${maxAttempts} attempts`);
+      return false;
+    } catch (_) {
+      return false;
     }
   }
-
-  // Strategy 2: Fallback DOM Extraction for table rows or result cards
-  const resultRows = parsedDoc.querySelectorAll('tr.result-row, tr[data-bind*="CaseNumber"], .case-card-item');
-  if (resultRows.length > 0) {
-    const cases = [];
-    resultRows.forEach((row, idx) => {
-      const caseNumEl = row.querySelector('.result-subtitle[title="Case Number"], .case-number, [data-bind*="CaseNumber"]');
-      const caseNum = caseNumEl ? caseNumEl.textContent.trim() : '';
-      if (!caseNum) return;
-
-      const titleEl = row.querySelector('.result-title, .case-title');
-      const detailRows = row.querySelectorAll('.result-row-details .row, td');
-
-      const caseData = {
-        index: idx + 1,
-        case_number: caseNum,
-        title: titleEl ? titleEl.textContent.trim() : '',
-        court: '',
-        case_type: '',
-        filed: '',
-        status: '',
-        charges: '',
-        _source: 'html-dom'
-      };
-
-      detailRows.forEach(detailRow => {
-        const text = detailRow.textContent.trim();
-        if (/court[:\s]/i.test(text)) caseData.court = text.replace(/court[:\s]*/i, '').trim();
-        if (/type[:\s]/i.test(text)) caseData.case_type = text.replace(/case\s*type[:\s]*/i, '').trim();
-        if (/filed[:\s]/i.test(text)) caseData.filed = text.replace(/filed[:\s]*/i, '').trim();
-        if (/status[:\s]/i.test(text)) caseData.status = text.replace(/status[:\s]*/i, '').trim();
-        if (/charges?[:\s]/i.test(text)) caseData.charges = text.replace(/charges?[:\s]*/i, '').trim();
-      });
-
-      cases.push(caseData);
-    });
-
-    if (cases.length > 0) {
-      return { cases, searchContext: filename };
-    }
-  }
-
-  // Strategy 3: Regex scan for Indiana Cause Numbers (XXDXX-YYYY-CC-NNNNNN)
-  const plainText = parsedDoc.body ? parsedDoc.body.innerText : text;
-  const indianaCauseRegex = /\b(\d{2}[A-Z]\d{2}-\d{4}-[A-Z0-9]{2}-\d{6})\b/g;
-  const matches = [...new Set(plainText.match(indianaCauseRegex) || [])];
-
-  if (matches.length > 0) {
-    const cases = matches.map((num, i) => ({
-      index: i + 1,
-      case_number: num,
-      title: 'Scraped Cause Record',
-      court: 'Indiana Court',
-      case_type: 'Indiana Record',
-      charges: 'Record parsed from uploaded document',
-      filed: '',
-      status: 'Disposed',
-      _source: 'cause-regex'
-    }));
-    return { cases, searchContext: filename };
-  }
-
-  throw new Error(`Could not find any Indiana MyCase records in "${filename}". Please make sure this is a saved MyCase search or CCS page.`);
 }
 
-// ─── Multi-File Upload Processing ──────────────────────────────────
-export async function processFiles(files) {
-  if (!files || files.length === 0) return;
-
-  const dropZone = $('#dropZone');
-  const uploadStatus = $('#uploadStatus');
-  const uploadStatusText = $('#uploadStatusText');
-
-  if (uploadStatus) uploadStatus.style.display = 'flex';
-  if (uploadStatusText) uploadStatusText.textContent = `Reading ${files.length} file(s)...`;
-
-  const allParsedCases = [];
-  const contexts = [];
-  let errors = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    try {
-      if (uploadStatusText) {
-        uploadStatusText.textContent = `Processing (${i + 1}/${files.length}): ${file.name}`;
-      }
-      const text = await file.text();
-      const { cases, searchContext } = parseFileContent(text, file.name);
-      if (cases && cases.length > 0) {
-        allParsedCases.push(...cases);
-        contexts.push(searchContext);
-      }
-    } catch (err) {
-      console.warn(`[File Parse Error] ${file.name}:`, err);
-      errors.push(`${file.name}: ${err.message}`);
-    }
-  }
-
-  if (uploadStatus) uploadStatus.style.display = 'none';
-
-  if (allParsedCases.length === 0) {
-    const errMsg = errors.length > 0
-      ? `Failed to import: ${errors.join('; ')}`
-      : 'No case records could be extracted from the uploaded file(s).';
-    showToast(errMsg, 'error', 6000);
-    return;
-  }
-
-  if (errors.length > 0) {
-    showToast(`Note: Some files had errors (${errors.length}), but ${allParsedCases.length} cases were extracted.`, 'warning', 5000);
-  }
-
-  const combinedContext = contexts.length === 1 ? contexts[0] : `${files.length} Files (${contexts.slice(0, 2).join(', ')}${contexts.length > 2 ? '...' : ''})`;
-  const mergeMode = $('#chkMergeCases')?.checked ?? true;
-
-  showParityModal(allParsedCases, combinedContext, mergeMode);
-}
-
-// ─── Sample Demo Dataset ───────────────────────────────────────────
-export function loadSampleDemoData() {
-  const sampleCases = [
-    {
-      case_number: '49D01-1805-CM-012345',
-      title: 'State of Indiana v. Sample Petitioner',
-      court: 'Marion Superior Court, Criminal Division 1',
-      case_type: 'CM - Misdemeanor',
-      filed: '05/12/2018',
-      status: '09/14/2018, Disposed - Conviction',
-      charges: 'Count 1: Operating a Vehicle While Intoxicated Endangering a Person (Class A Misdemeanor) · Conviction',
-      _source: 'demo'
-    },
-    {
-      case_number: '45D02-1502-F6-000456',
-      title: 'State of Indiana v. Sample Petitioner',
-      court: 'Lake Superior Court, Criminal Division 2',
-      case_type: 'F6 - Level 6 Felony',
-      filed: '02/10/2015',
-      status: '06/20/2015, Disposed - Conviction',
-      charges: 'Count 1: Theft (Level 6 Felony, Non-Violent) · Conviction',
-      _source: 'demo'
-    },
-    {
-      case_number: '02D04-2001-CM-000789',
-      title: 'State of Indiana v. Sample Petitioner',
-      court: 'Allen Superior Court, Criminal Division 4',
-      case_type: 'CM - Misdemeanor',
-      filed: '01/15/2020',
-      status: '04/10/2020, Dismissed by State',
-      charges: 'Count 1: Public Intoxication (Class B Misdemeanor) · Dismissed with Prejudice',
-      _source: 'demo'
-    },
-    {
-      case_number: '49C01-2308-PL-005678',
-      title: 'Landlord LLC v. Sample Tenant',
-      court: 'Marion Circuit Court',
-      case_type: 'PL - Civil Plenary',
-      filed: '08/20/2023',
-      status: '01/10/2024, Judgment Entered',
-      charges: 'Civil Breach of Contract Dispute',
-      _source: 'demo'
-    }
-  ];
-
-  applyImportedCases(sampleCases, 'Indiana Demo Cases (4 Records)', false);
-  showToast('✓ Loaded sample Indiana court records for demonstration.', 'success', 4000);
-}
-
-// ─── Setup Drag-and-Drop & File Upload Listeners ────────────────────
-export function setupImportListeners() {
-  const dropZone = $('#dropZone');
-  const fileInput = $('#fileUpload');
-  const btnSelectFiles = $('#btnSelectFiles');
-  const btnLoadDemo = $('#btnLoadDemo');
-  const btnPasteToggle = $('#btnPasteToggle');
-  const pasteContainer = $('#pasteContainer');
-  const btnProcessPaste = $('#btnProcessPaste');
-  const pasteInput = $('#pasteInput');
-
-  // Browse button
-  btnSelectFiles?.addEventListener('click', () => {
-    fileInput?.click();
-  });
-
-  fileInput?.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      processFiles(e.target.files);
-      fileInput.value = '';
-    }
-  });
-
-  // Drag and Drop
-  if (dropZone) {
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.add('drag-active');
-      }, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.remove('drag-active');
-      }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt?.files;
-      if (files && files.length > 0) {
-        processFiles(files);
-      }
-    });
-  }
-
-  // Demo Button
-  btnLoadDemo?.addEventListener('click', () => {
-    loadSampleDemoData();
-  });
-
-  // Paste Drawer Toggle
-  btnPasteToggle?.addEventListener('click', () => {
-    if (pasteContainer) {
-      const isHidden = pasteContainer.style.display === 'none' || !pasteContainer.style.display;
-      pasteContainer.style.display = isHidden ? 'block' : 'none';
-      if (isHidden && pasteInput) pasteInput.focus();
-    }
-  });
-
-  // Process Pasted Text
-  btnProcessPaste?.addEventListener('click', () => {
-    const raw = pasteInput?.value?.trim();
-    if (!raw) {
-      showToast('Please paste HTML source or JSON data into the text box.', 'warning');
-      return;
-    }
+// ─── Scan Action (Supports Multi-Page Merge for Maiden/Aliases) ──────
+const scanBtn = $('#btnScan');
+if (scanBtn) {
+  scanBtn.addEventListener('click', async () => {
+    scanBtn.disabled = true;
+    scanBtn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px"></span> Scanning...';
 
     try {
-      const { cases, searchContext } = parseFileContent(raw, 'Pasted Source Data');
-      if (cases && cases.length > 0) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab) throw new Error('No active tab');
+
+      // Verify we're on a MyCase page
+      if (!isMyCaseUrl(tab.url)) {
+        throw new Error('Not on a MyCase page — navigate to https://public.courts.in.gov/mycase first');
+      }
+
+      // Ensure content script is loaded (auto-reinjects if necessary)
+      const scriptReady = await ensureContentScript(tab.id);
+      if (!scriptReady) {
+        throw new Error('Could not load the content script — please refresh the MyCase page');
+      }
+
+      const response = await chrome.tabs.sendMessage(tab.id, { action: 'analyzeEligibility' });
+
+      if (response?.success) {
+        const incomingCases = response.cases || [];
+        const searchContext = response.searchContext || 'MyCase Search';
         const mergeMode = $('#chkMergeCases')?.checked ?? true;
-        showParityModal(cases, searchContext, mergeMode);
-        if (pasteInput) pasteInput.value = '';
-        if (pasteContainer) pasteContainer.style.display = 'none';
+
+        if (incomingCases.length === 0) {
+          showToast('No case records found on this MyCase page.', 'warning', 4000);
+          return;
+        }
+
+        // Show parity modal so the user can verify extracted cases before merging.
+        showParityModal(incomingCases, searchContext, mergeMode);
+        return;
+      } else {
+        throw new Error(response?.error || 'Scan failed');
       }
+    } catch (e) {
+      if (e.message?.includes('Receiving end does not exist') || e.message?.includes('Could not establish connection')) {
+        showToast('Content script not responding — refresh the MyCase page and try again', 'error', 6000);
+      } else {
+        showToast(e.message, 'error');
+      }
+      console.error('[Sidepanel] Scan error:', e);
+    } finally {
+      scanBtn.disabled = false;
+      scanBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Scan Page & Check Eligibility
+      `;
+    }
+  });
+}
+
+// ─── Offline JSON / HTML Upload Action ─────────────────────────────
+const btnUploadHtml = $('#btnUploadHtml');
+const htmlUpload = $('#htmlUpload');
+
+if (btnUploadHtml && htmlUpload) {
+  btnUploadHtml.addEventListener('click', () => {
+    htmlUpload.click();
+  });
+
+  htmlUpload.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    btnUploadHtml.disabled = true;
+    btnUploadHtml.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Parsing...';
+
+    try {
+      const text = await file.text();
+      let incomingCases = [];
+      let searchContext = 'MyCase Search';
+      const isJson = file.name.endsWith('.json') || text.trim().startsWith('{') || text.trim().startsWith('[');
+
+      if (isJson) {
+        try {
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed)) {
+            incomingCases = parsed;
+          } else if (parsed && Array.isArray(parsed.cases)) {
+            incomingCases = parsed.cases;
+            searchContext = parsed.searchContext || searchContext;
+          } else if (parsed && Array.isArray(parsed.currentCases)) {
+            incomingCases = parsed.currentCases;
+            searchContext = parsed.searchContext || searchContext;
+          } else {
+            throw new Error('JSON does not contain a recognized case list structure.');
+          }
+        } catch (jsonErr) {
+          throw new Error('Invalid JSON file format: ' + jsonErr.message);
+        }
+      } else {
+        // HTML parsing
+        const parser = new DOMParser();
+        const parsedDoc = parser.parseFromString(text, 'text/html');
+
+        // Check if it's a valid MyCase page
+        if (!window.MyCaseScraper) {
+          throw new Error('Scraper module not loaded.');
+        }
+
+        if (!window.MyCaseScraper.isSearchResultsPage(parsedDoc)) {
+          throw new Error('The uploaded file does not appear to be a MyCase search results page.');
+        }
+
+        incomingCases = window.MyCaseScraper.scrapeSearchResults(parsedDoc);
+        searchContext = window.MyCaseScraper.getSearchContext(parsedDoc);
+      }
+
+      const mergeMode = $('#chkMergeCases')?.checked ?? true;
+
+      if (!incomingCases || incomingCases.length === 0) {
+        showToast('No case records found in the uploaded file.', 'warning', 4000);
+        return;
+      }
+
+      showParityModal(incomingCases, searchContext, mergeMode);
     } catch (err) {
       showToast(err.message, 'error', 6000);
+      console.error('[Scanner] Upload parse error:', err);
+    } finally {
+      btnUploadHtml.disabled = false;
+      btnUploadHtml.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        Upload Saved HTML or JSON File
+      `;
+      // Reset input so the same file can be uploaded again if needed
+      htmlUpload.value = '';
     }
-  });
-
-  // Bookmarklet Copy Action
-  $('#btnCopyAppBookmarklet')?.addEventListener('click', async () => {
-    const code = "javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();";
-    try {
-      await navigator.clipboard.writeText(code);
-      showToast('✓ Bookmarklet code copied to clipboard!', 'success', 3000);
-    } catch (_) {
-      showToast('Please drag the blue button to your bookmarks bar.', 'info', 3000);
-    }
-  });
-
-  // Result Filtering Listeners
-  $$('.filter-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      $$('.filter-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      const filter = pill.dataset.filter || 'all';
-      filterCaseCards(filter);
-    });
   });
 }
 
-// ─── Filter Case Cards in Results Tab ──────────────────────────────
-export function filterCaseCards(filter) {
-  const cards = $$('#caseList .case-card');
-  cards.forEach(card => {
-    if (filter === 'all') {
-      card.style.display = 'block';
-    } else if (filter === 'eligible') {
-      card.style.display = card.dataset.eligible === 'true' ? 'block' : 'none';
-    } else if (filter === 'ineligible') {
-      card.style.display = card.dataset.eligible === 'false' && card.dataset.statute !== 'N/A' ? 'block' : 'none';
-    } else if (filter === 'excluded') {
-      card.style.display = card.dataset.statute === 'N/A' ? 'block' : 'none';
+// ─── Bookmarklet Copy Action ───────────────────────────────────────
+$('#btnCopyAppBookmarklet')?.addEventListener('click', async () => {
+  const code = "javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();";
+  try {
+    await navigator.clipboard.writeText(code);
+    showToast('✓ Bookmarklet code copied to clipboard!', 'success', 3000);
+  } catch (_) {
+    showToast('Please drag the blue button to your bookmarks bar.', 'info', 3000);
+  }
+});
+
+// ─── Deep Scrape Action ────────────────────────────────────────────
+const deepScrapeBtn = $('#btnDeepScrape');
+if (deepScrapeBtn) {
+  deepScrapeBtn.addEventListener('click', async () => {
+    deepScrapeBtn.disabled = true;
+
+    const progress = $('#scanProgress');
+    const progressFill = $('#progressFill');
+    const progressText = $('#progressText');
+    if (progress) progress.style.display = 'block';
+    if (progressFill) progressFill.style.width = '0%';
+    if (progressText) progressText.textContent = 'Starting deep scrape...';
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab) throw new Error('No active tab');
+
+      if (!isMyCaseUrl(tab.url)) {
+        throw new Error('Not on a MyCase page — navigate to https://public.courts.in.gov/mycase first');
+      }
+
+      const scriptReady = await ensureContentScript(tab.id);
+      if (!scriptReady) {
+        throw new Error('Could not load the content script — please refresh the MyCase page');
+      }
+
+      const response = await chrome.tabs.sendMessage(tab.id, { action: 'deepScrape' });
+
+      if (response?.success) {
+        AppState.currentCases = response.cases;
+        AppState.currentReport = response.report;
+        renderResults();
+        showToast('Deep scrape complete — CCS details enriched', 'success');
+        if (progressFill) progressFill.style.width = '100%';
+        if (progressText) progressText.textContent = 'Complete!';
+
+        chrome.runtime.sendMessage({
+          action: 'saveScanResults',
+          cases: AppState.currentCases,
+          report: AppState.currentReport,
+          searchBatches: AppState.searchBatches
+        });
+      } else {
+        throw new Error(response?.error || 'Deep scrape failed');
+      }
+    } catch (e) {
+      if (e.message?.includes('Receiving end does not exist') || e.message?.includes('Could not establish connection')) {
+        showToast('Content script not responding — refresh the MyCase page and try again', 'error', 6000);
+      } else {
+        showToast(e.message, 'error');
+      }
+    } finally {
+      deepScrapeBtn.disabled = false;
+      setTimeout(() => { if (progress) progress.style.display = 'none'; }, 2000);
+    }
+  });
+}
+
+// ─── Deep Scrape Progress Listener ─────────────────────────────────
+if (typeof chrome !== 'undefined' && chrome?.runtime?.onMessage) {
+  chrome.runtime.onMessage.addListener((request) => {
+    if (request.action === 'deepScrapeProgress') {
+      const pct = Math.round((request.current / request.total) * 100);
+      const fill = $('#progressFill');
+      const text = $('#progressText');
+      if (fill) fill.style.width = `${pct}%`;
+      if (text) text.textContent = `Fetching CCS ${request.current}/${request.total}: ${request.caseNum}`;
     }
   });
 }
@@ -654,7 +640,7 @@ export function renderResults() {
   if (resultsCountPill) resultsCountPill.textContent = `${AppState.currentCases.length} Cases`;
   if (resultsSearchesPill) {
     const numSearches = AppState.searchBatches.length || 1;
-    resultsSearchesPill.textContent = `from ${numSearches} import source${numSearches === 1 ? '' : 's'}`;
+    resultsSearchesPill.textContent = `from ${numSearches} search${numSearches === 1 ? '' : 'es'}`;
   }
 
   // Statute breakdown
@@ -695,6 +681,7 @@ export function renderResults() {
   if (!listEl) return;
   listEl.innerHTML = '';
 
+  // Flatten all county cases
   const allCases = [];
   for (const county of Object.values(AppState.currentReport.counties || {})) {
     for (const c of county.cases) {
@@ -713,13 +700,9 @@ export function renderResults() {
   for (const c of allCases) {
     listEl.appendChild(createCaseCard(c));
   }
-
-  // Reset active filter
-  const activePill = $('.filter-pill.active');
-  if (activePill) filterCaseCards(activePill.dataset.filter || 'all');
 }
 
-export function excludeCase(caseNum) {
+function excludeCase(caseNum) {
   if (!caseNum) return;
   const idx = AppState.currentCases.findIndex(c => (c.case_number || '').trim().toUpperCase() === caseNum.trim().toUpperCase());
   if (idx === -1) return;
@@ -735,18 +718,13 @@ export function excludeCase(caseNum) {
   updateBatchPanelUI();
   renderResults();
   updateChecklist();
-  showToast(`Excluded ${caseNum} from petition. Eligibility recalculated.`, 'info', 3500);
+  showToast(`Excluded ${caseNum} from filing. Eligibility recalculated.`, 'info', 3500);
 }
 
 function createCaseCard(caseData) {
   const el = caseData.eligibility;
   const card = document.createElement('div');
   card.className = 'case-card';
-
-  const isElig = Boolean(el?.eligible);
-  const isStatuteNA = el?.statute === 'N/A';
-  card.dataset.eligible = String(isElig);
-  card.dataset.statute = el?.statute || '';
 
   // Badge
   let badgeClass = 'excluded';
@@ -755,7 +733,7 @@ function createCaseCard(caseData) {
     if (el.eligible) {
       badgeClass = 'eligible';
       badgeText = 'ELIGIBLE';
-    } else if (isStatuteNA) {
+    } else if (el.statute === 'N/A') {
       badgeClass = 'excluded';
       badgeText = 'CIVIL';
     } else if (el.isPending) {
@@ -775,51 +753,51 @@ function createCaseCard(caseData) {
 
   card.innerHTML = `
     <div class="case-card-header">
-      <div class="case-card-title-group">
-        <span class="case-number">${escapeHtml(caseData.case_number || '')}</span>
-        <span class="case-badge ${badgeClass}">${badgeText}</span>
-      </div>
+      <span class="case-number">${escapeHtml(caseData.case_number || '')}</span>
       <div class="case-card-header-actions">
-        <button type="button" class="btn-remove-case" title="Exclude this case from petition (e.g. maiden name mismatch / not you)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Exclude
-        </button>
+        <span class="case-badge ${badgeClass}">${badgeText}</span>
+        <button type="button" class="btn-remove-case" title="Exclude this case from petition (e.g. maiden name mismatch / not you)">&times; Exclude</button>
       </div>
     </div>
-    ${searchQueriesDisplay ? `<div class="case-search-tag">📄 Source: ${escapeHtml(searchQueriesDisplay)}</div>` : ''}
+    ${searchQueriesDisplay ? `<div class="case-search-tag">🔍 Found via: ${escapeHtml(searchQueriesDisplay)}</div>` : ''}
     <div class="case-charges">${escapeHtml(chargesDisplay)}</div>
     <div class="case-meta">
-      <span><strong>Code:</strong> ${escapeHtml(typeCode || 'N/A')}</span>
-      <span><strong>Filed:</strong> ${escapeHtml(caseData.filed || 'N/A')}</span>
-      <span><strong>Court:</strong> ${escapeHtml(caseData.court || 'Indiana Court')}</span>
+      <span>${escapeHtml(typeCode)}</span>
+      <span>Filed: ${escapeHtml(caseData.filed || 'N/A')}</span>
+      <span>${escapeHtml(caseData.court || '')}</span>
     </div>
     <div class="case-detail">
-      <div class="detail-grid">
-        <div class="detail-row">
-          <span class="detail-label">Status</span>
-          <span class="detail-value">${escapeHtml(caseData.status || 'N/A')}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Statute</span>
-          <span class="detail-value statute">${escapeHtml(el?.statute || 'N/A')}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Years Elapsed</span>
-          <span class="detail-value">${el?.yearsElapsed ?? 'N/A'} years</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Waiting Period</span>
-          <span class="detail-value">${el?.waitingPeriod ? `≥${el.waitingPeriod} years` : 'N/A'}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Grant Type</span>
-          <span class="detail-value">${escapeHtml(el?.grantType || 'N/A')}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Reason</span>
-          <span class="detail-value">${escapeHtml(el?.reason || '')}</span>
-        </div>
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="detail-value">${escapeHtml(caseData.status || 'N/A')}</span>
       </div>
+      <div class="detail-row">
+        <span class="detail-label">Statute</span>
+        <span class="detail-value statute">${escapeHtml(el?.statute || 'N/A')}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Years Elapsed</span>
+        <span class="detail-value">${el?.yearsElapsed ?? 'N/A'} years</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Waiting Period</span>
+        <span class="detail-value">${el?.waitingPeriod ? `≥${el.waitingPeriod} years` : 'N/A'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Grant Type</span>
+        <span class="detail-value">${escapeHtml(el?.grantType || 'N/A')}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Reason</span>
+        <span class="detail-value">${escapeHtml(el?.reason || '')}</span>
+      </div>
+      ${el?.exclusionReason ? `
+        <div class="ineligible-mitigation-box ${el.mitigationType === 'consent_required' ? 'consent-required' : 'strictly-excluded'}">
+          <div class="mitigation-title">Statutory Exclusion (IC § 35-38-9)</div>
+          <p><strong>Rule:</strong> ${escapeHtml(el.exclusionReason)}</p>
+          <p><strong>Mitigation:</strong> ${escapeHtml(el.mitigationSteps)}</p>
+        </div>
+      ` : ''}
       ${el?.warnings?.length ? `
         <div class="case-warnings">
           ${el.warnings.map(w => `<span class="warning-tag">⚠ ${escapeHtml(w)}</span>`).join('')}
@@ -828,11 +806,7 @@ function createCaseCard(caseData) {
     </div>
   `;
 
-  card.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-remove-case')) return;
-    card.classList.toggle('expanded');
-  });
-
+  card.addEventListener('click', () => card.classList.toggle('expanded'));
   card.querySelector('.btn-remove-case')?.addEventListener('click', (e) => {
     e.stopPropagation();
     excludeCase(caseData.case_number);
@@ -840,6 +814,3 @@ function createCaseCard(caseData) {
 
   return card;
 }
-
-// Initialize listeners when scanner is loaded
-setupImportListeners();

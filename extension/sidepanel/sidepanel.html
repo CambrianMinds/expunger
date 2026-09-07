@@ -28,15 +28,20 @@
     </div>
     <div class="header-actions">
       <button class="guide-badge" id="btnUserGuide" title="Open Step-by-Step Instructions &amp; Guide">
-        <span class="badge-icon">📖</span> Guide
+        <span class="badge-icon">📖</span> <span data-i18n="nav_guide">Guide</span>
       </button>
       <button class="disclaimer-badge" id="btnLegalNotice" title="View Legal Disclaimer & One-Shot Warning">
-        <span class="badge-icon">⚖️</span> Notice
+        <span class="badge-icon">⚖️</span> <span data-i18n="nav_legal">Notice</span>
       </button>
       <div class="header-status" id="backendStatus" role="button" tabindex="0" title="In-Browser PDF Generator is active and ready">
         <span class="status-dot online"></span>
-        <span class="status-label">Engine Ready</span>
+        <span class="status-label" data-i18n="status_ready">Engine Ready</span>
       </div>
+      <!-- Language Toggle Button -->
+      <button class="lang-toggle" aria-label="Toggle language" title="Change Language">
+        <span style="margin-right:4px;font-size:1rem;">🌐</span>
+        <span class="lang-toggle-text">EN</span>
+      </button>
     </div>
   </header>
 
@@ -50,7 +55,7 @@
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
-        Scan
+        <span data-i18n="tab_scanner">Scan</span>
       </button>
       <button class="tab-btn" data-tab="results">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -67,7 +72,7 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
-        Profile
+        <span data-i18n="tab_profile">Profile</span>
       </button>
       <button class="tab-btn" data-tab="generate">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -75,7 +80,7 @@
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
-        Generate
+        <span data-i18n="tab_generate">Generate</span>
       </button>
     </nav>
 
@@ -477,11 +482,6 @@
         </p>
       </div>
 
-      <div class="generate-hero">
-        <h3>Generate Expungement Packet</h3>
-        <p>Compiles a complete, court-ready packet adhering to Indiana Trial Rules—including Appearance, Confidential ACR records, Verified Petition, Notices, Certificate of Service, Proposed Order, and Fee Waiver.</p>
-      </div>
-
       <!-- Mandatory Pro Se Acknowledgments -->
       <div class="acknowledgment-card">
         <div class="ack-card-header">
@@ -494,7 +494,7 @@
 
         <label class="ack-item">
           <input type="checkbox" id="ackOneShot" class="ack-checkbox">
-          <span class="ack-label">
+          <span class="ack-label" data-i18n="ack_one_shot">
             <b>Lifetime One-Shot Rule (IC § 35-38-9-9(i)):</b> I understand Indiana allows conviction expungement
             <u>only once in my entire life</u>. Any conviction I fail to include can <u>NEVER</u> be expunged later.
           </span>
@@ -502,7 +502,7 @@
 
         <label class="ack-item">
           <input type="checkbox" id="ackAllCounties" class="ack-checkbox">
-          <span class="ack-label">
+          <span class="ack-label" data-i18n="ack_all_counties">
             <b>All Charges &amp; Aliases Included:</b> I have searched MyCase for all names/aliases across all Indiana
             counties and verified that all eligible cases are accounted for.
           </span>
@@ -510,7 +510,7 @@
 
         <label class="ack-item">
           <input type="checkbox" id="ackNotLawyer" class="ack-checkbox">
-          <span class="ack-label">
+          <span class="ack-label" data-i18n="ack_not_lawyer">
             <b>Not a Lawyer / Not Legal Advice:</b> I understand the creator is an <u>independent individual, NOT an
               attorney</u>, and this software is a self-help formatting tool, not legal counsel.
           </span>
@@ -518,7 +518,7 @@
 
         <label class="ack-item">
           <input type="checkbox" id="ackProSe" class="ack-checkbox">
-          <span class="ack-label">
+          <span class="ack-label" data-i18n="ack_pro_se">
             <b>Pro Se Responsibility &amp; Liability Release:</b> I accept full responsibility for verifying, signing,
             and filing my documents, and release the tool creator from all liability.
           </span>
@@ -580,15 +580,15 @@
       <div class="generate-options">
         <label class="checkbox-label">
           <input type="checkbox" id="includeFeeWaiver" checked>
-          Include Fee Waiver Request (Form 08)
+          <span data-i18n="label_fee_waiver">Include Fee Waiver Request (Form 08)</span>
         </label>
         <label class="checkbox-label" title="Required by IC § 35-38-9-8(b). Contains SSN, DOB, and 10-year address history.">
           <input type="checkbox" id="includeAddressSupplement" checked disabled>
-          Include Confidential Info & Address Supplement (Form 03 - REQUIRED)
+          <span data-i18n="label_address_supp">Include Confidential Info & Address Supplement (Form 03 - REQUIRED)</span>
         </label>
         <label class="checkbox-label">
           <input type="checkbox" id="eSignDocuments">
-          Electronically sign documents (/s/ format for IEFS e-Filing)
+          <span data-i18n="label_esign">Electronically sign documents (/s/ format for IEFS e-Filing)</span>
         </label>
       </div>
 
@@ -673,7 +673,7 @@
           <li>✓ All 92 Indiana counties (not just the county you currently live in)</li>
           <li>✓ Both misdemeanors and felony charges</li>
           <li>✓ Any open or pending warrants/cases</li>
-          <li>✓ <b>Strongly Recommended:</b> Obtained an official Indiana State Police (ISP) Criminal History Background Check to ensure no cases were missed</li>
+          <li>✓ <b>Recommendation Acknowledged:</b> I understand it is strongly recommended to obtain an official Indiana State Police (ISP) Criminal History Background Check to ensure no cases are missed before filing</li>
         </ul>
         <p class="modal-subtext">
           <b>Disclaimer:</b> The creator of this software is an independent individual advocating for accessibility, NOT
@@ -740,8 +740,17 @@
     </div>
   </div>
 
+  <!-- Scripts: Loaded in dependency order -->
   <script src="../pdf-lib.min.js"></script>
   <script src="../eligibility.js"></script>
+  <script src="i18n.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.IndianaI18n) {
+        window.IndianaI18n.initLanguage();
+      }
+    });
+  </script>
   <script type="module" src="main.js"></script>
 </body>
 

@@ -9,7 +9,8 @@ const parityMap = [
   { ext: 'extension/sidepanel/profile.js', app: 'docs/app/profile.js' },
   { ext: 'extension/sidepanel/state.js', app: 'docs/app/state.js' },
   { ext: 'extension/sidepanel/ui.js', app: 'docs/app/ui.js' },
-  { ext: 'extension/sidepanel/utils.js', app: 'docs/app/utils.js' }
+  { ext: 'extension/sidepanel/utils.js', app: 'docs/app/utils.js' },
+  { ext: 'extension/sidepanel/i18n.js', app: 'docs/app/i18n.js' }
 ];
 
 // Note: generator.js and scanner.js and main.js might have environment specific code, 

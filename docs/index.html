@@ -75,15 +75,20 @@
       </a>
 
       <ul class="nav-links">
-        <li><a href="#assessment" class="nav-link">Eligibility</a></li>
-        <li><a href="#oneshot" class="nav-link">Lifetime Limit</a></li>
-        <li><a href="#documents" class="nav-link">Pleadings</a></li>
-        <li><a href="#instructions" class="nav-link">How to File</a></li>
-        <li><a href="#faq" class="nav-link">FAQ</a></li>
-        <li><a href="#mission" class="nav-link">Mission</a></li>
+          <li><a href="#eligibility" data-i18n="nav_eligibility">Eligibility</a></li>
+          <li><a href="#warning" data-i18n="nav_lifetime_limit">Lifetime Limit</a></li>
+          <li><a href="#pleadings" data-i18n="nav_pleadings">Pleadings</a></li>
+          <li><a href="#workflow" data-i18n="nav_how_to_file">How to File</a></li>
+          <li><a href="#faq" data-i18n="nav_faq">FAQ</a></li>
+          <li><a href="#mission" data-i18n="nav_mission">Mission</a></li>
       </ul>
 
       <div class="nav-actions">
+        <!-- Language Toggle Button -->
+        <button class="lang-toggle" aria-label="Toggle language" title="Change Language">
+          <span style="margin-right:2px;">🌐</span>
+          <span class="lang-toggle-text">EN</span>
+        </button>
         <!-- Theme Toggle Button -->
         <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light color mode"
           title="Toggle dark/light theme">
@@ -122,7 +127,7 @@
   <section class="hero">
     <div class="container hero-container">
       <div class="hero-badge">
-        <span>A Free Public Initiative &bull; Pursuant to Indiana Code § 35-38-9</span>
+        <span data-i18n="feat_2_desc">A Free Public Initiative &bull; Pursuant to Indiana Code § 35-38-9</span>
       </div>
 
       <h1>Your Second Chance Starts Here. <span class="hero-subhead">No attorney required to file.</span></h1>
@@ -133,13 +138,8 @@
       </p>
 
       <div class="hero-cta-row">
-        <a href="#assessment" class="btn btn-primary">
-          <span>Check Your Statutory Eligibility</span>
-          <span>→</span>
-        </a>
-        <a href="#instructions" class="btn btn-outline">
-          <span>How to Prepare Your Petition</span>
-        </a>
+        <a href="#eligibility" class="btn btn-secondary" data-i18n="btn_check_eligibility">Check Your Statutory Eligibility</a>
+        <a href="#workflow" class="btn btn-secondary" data-i18n="btn_how_to_prepare">How to Prepare Your Petition</a>
         <a href="app/app.html" class="btn btn-outline"
           style="border-color: var(--brand-accent); color: var(--brand-accent);">
           <span>Launch Web App (No Install Needed)</span>
@@ -148,8 +148,8 @@
 
       <div class="hero-trust-bar">
         <div class="trust-item">
-          <span class="trust-num">100% Private</span>
-          <span class="trust-label">All processing executes locally in your browser — zero tracking, zero logs</span>
+          <h3 data-i18n="feat_1_title">100% Private</h3>
+          <p data-i18n="feat_1_desc">All processing executes locally in your browser — zero tracking, zero logs</p>
         </div>
         <div class="trust-item">
           <span class="trust-num">$0 to Use</span>
@@ -157,8 +157,8 @@
             paywalls</span>
         </div>
         <div class="trust-item">
-          <span class="trust-num">10 Court Pleadings</span>
-          <span class="trust-label">Complete petition packet formatted pursuant to Indiana Trial Rules</span>
+          <h3 data-i18n="feat_3_title">10 Court Pleadings</h3>
+          <p data-i18n="feat_3_desc">Complete petition packet formatted pursuant to Indiana Trial Rules</p>
         </div>
       </div>
     </div>
@@ -1110,10 +1110,10 @@
     <div class="container">
       <div class="footer-columns">
         <div class="footer-about">
-          <h4>Indiana Expungement Assistant</h4>
-          <p>
-            Free, open-source tools for Indiana expungement (IC § 35-38-9). The law is yours. This is just the machinery
-            to use it.
+          <h1 data-i18n="hero_title">Indiana Expungement Assistant</h1>
+          <p class="footer-developer">
+            <span data-i18n="hero_subtitle">Free Pro Se Document Generator</span><br>
+            <span data-i18n="hero_description">Your Second Chance Starts Here. No attorney required to file.</span>
           </p>
           <p class="footer-developer">
             Built by <strong>Justin Bogner</strong> · A <strong>CambrianMinds</strong> Project
@@ -1193,6 +1193,14 @@
     </svg>
   </button>
 
+  <script src="app/i18n.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.IndianaI18n) {
+        window.IndianaI18n.initLanguage();
+      }
+    });
+  </script>
   <script src="app.js?v=7"></script>
 </body>
 

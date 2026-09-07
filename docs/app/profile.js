@@ -287,8 +287,8 @@ import { showToast, updateChecklist } from './ui.js';
 
     if (fieldId === 'dob') {
       if (!val) {
-        setFieldError('dob', 'Date of birth is required');
-        return false;
+        clearFieldError('dob');
+        return true;
       }
       const d = new Date(val + 'T00:00:00');
       if (isNaN(d.getTime())) {
@@ -316,8 +316,8 @@ import { showToast, updateChecklist } from './ui.js';
     if (fieldId === 'ssn') {
       const clean = val.replace(/\D/g, '');
       if (!clean) {
-        setFieldError('ssn', 'SSN is required for the confidential ACR form');
-        return false;
+        clearFieldError('ssn');
+        return true;
       }
       if (clean.length !== 9) {
         setFieldError('ssn', `Must be exactly 9 digits (entered ${clean.length})`);
@@ -350,8 +350,8 @@ import { showToast, updateChecklist } from './ui.js';
 
     if (fieldId === 'streetAddress') {
       if (!val) {
-        setFieldError('streetAddress', 'Street address is required');
-        return false;
+        clearFieldError('streetAddress');
+        return true;
       }
       if (val.length < 4) {
         setFieldError('streetAddress', 'Please enter a valid street address');
@@ -363,8 +363,8 @@ import { showToast, updateChecklist } from './ui.js';
 
     if (fieldId === 'city') {
       if (!val) {
-        setFieldError('city', 'City is required');
-        return false;
+        clearFieldError('city');
+        return true;
       }
       if (!/^[A-Za-z\s.'-]+$/.test(val)) {
         setFieldError('city', 'City contains invalid characters');
@@ -376,8 +376,8 @@ import { showToast, updateChecklist } from './ui.js';
 
     if (fieldId === 'state') {
       if (!val) {
-        setFieldError('state', 'State is required');
-        return false;
+        clearFieldError('state');
+        return true;
       }
       clearFieldError('state');
       return true;
@@ -385,8 +385,8 @@ import { showToast, updateChecklist } from './ui.js';
 
     if (fieldId === 'zipCode') {
       if (!val) {
-        setFieldError('zipCode', 'ZIP code is required');
-        return false;
+        clearFieldError('zipCode');
+        return true;
       }
       const clean = val.replace(/\D/g, '');
       if (clean.length !== 5 && clean.length !== 9) {

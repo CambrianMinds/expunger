@@ -521,6 +521,24 @@ function buildForm00(ctx, payload) {
   ctx.drawSingleSpacedParagraph(
     '6. Fillable Fields & Signatures: Any field left blank can be filled directly in this PDF before filing or printed and signed. If you selected the e-sign option, your "/s/" signature is already affixed and the documents are ready for upload.'
   );
+
+  const pet = payload.petitioner || {};
+  const missingFields = [];
+  if (!pet.dob) missingFields.push('Date of Birth');
+  if (!pet.ssn) missingFields.push('Social Security Number');
+  if (!pet.driverLicense) missingFields.push('Driver\'s License Number');
+  if (!pet.streetAddress || !pet.city || !pet.zipCode) missingFields.push('Complete Current Address');
+  if (!pet.phone) missingFields.push('Telephone Number');
+  
+  if (missingFields.length > 0) {
+    ctx.drawHeading('⚠️ MISSING INFORMATION WARNING');
+    ctx.drawSingleSpacedParagraph(
+      'You generated this packet without providing the following information. You MUST fill these fields in by hand or by typing them into the fillable PDF before filing, or your petition may be rejected by the court:'
+    );
+    missingFields.forEach(f => {
+      ctx.drawSingleSpacedParagraph(`• ${f}`);
+    });
+  }
 }
 
 

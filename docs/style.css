@@ -363,7 +363,7 @@ body {
 }
 
 /* Theme Toggle Button (Circular & Minimalist) */
-.theme-toggle {
+.theme-toggle, .lang-toggle {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -378,7 +378,15 @@ body {
   flex-shrink: 0;
 }
 
-.theme-toggle:hover {
+.lang-toggle {
+  width: auto;
+  padding: 0 10px;
+  border-radius: 17px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.theme-toggle:hover, .lang-toggle:hover {
   background-color: var(--color-surface);
   border-color: var(--color-blue-600);
   color: var(--color-blue-600);
