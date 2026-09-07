@@ -295,6 +295,9 @@
             <button type="button" class="filter-pill" data-filter="ineligible">Ineligible</button>
             <button type="button" class="filter-pill" data-filter="excluded">Civil / Excluded</button>
           </div>
+          <button type="button" class="btn btn-sm btn-outline" id="btnManualEntry" title="Manually add a case missing from your search results">
+            <span>➕ Add Case Manually</span>
+          </button>
           <button type="button" class="btn btn-sm btn-outline" id="btnScanAnotherPage" title="Upload another MyCase file for other names or counties">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span>Upload Another File</span>
@@ -657,10 +660,22 @@
           <b>Confirm these are all the cases from your MyCase search.</b>
         </p>
         <p class="modal-subtext">
-          Extracted <b id="parityCaseCount">0</b> case(s). Review the list below. If any cases are missing, click <b>Cancel</b> and try uploading again.
+          Extracted <b id="parityCaseCount">0</b> case(s). Review the list below. If any cases are missing, click <b>Cancel</b> and try uploading again, or add them manually later.
         </p>
-        <div class="modal-callout-info" id="parityCaseList">
-          <!-- Dynamically populated -->
+        <div class="modal-callout-info parity-grid-container">
+          <table class="parity-grid" id="parityCaseGrid">
+            <thead>
+              <tr>
+                <th>Case Number</th>
+                <th>Case Type</th>
+                <th>Charges</th>
+                <th>Disposition Date</th>
+              </tr>
+            </thead>
+            <tbody id="parityCaseList">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
         </div>
         <div class="modal-callout-warning">
           <b>⚠️ 92-County Rule Reminder:</b> Under <b>IC § 35-38-9-9(d)</b>, petitions in multiple counties must be filed within a <b>365-day window</b>. Search <b>all 92 Indiana counties</b> for every name and alias before generating your petition.
@@ -710,6 +725,47 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" id="btnModalCancel">Go Back &amp; Verify</button>
         <button class="btn btn-danger" id="btnModalConfirm">I Confirm All Charges Are Included</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Manual Case Entry ═══ -->
+  <div class="modal-overlay" id="manualEntryModal" style="display:none">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-icon-alert">✍️</div>
+        <h3>Add Case Manually</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-lead">Enter case details if the MyCase scraper failed to extract them.</p>
+        <form id="manualEntryForm" class="profile-form">
+          <div class="form-group">
+            <label for="manualCaseNumber">Case Number *</label>
+            <input type="text" id="manualCaseNumber" placeholder="e.g. 49D01-1605-FD-000123" required>
+          </div>
+          <div class="form-group">
+            <label for="manualCaseTitle">Case Title</label>
+            <input type="text" id="manualCaseTitle" placeholder="e.g. State of Indiana v. John Doe">
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label for="manualCaseType">Case Type (Code) *</label>
+              <input type="text" id="manualCaseType" placeholder="e.g. FD, CM" required>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label for="manualDispositionDate">Disposition/Filed Date *</label>
+              <input type="date" id="manualDispositionDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="manualCharges">Charges (Optional)</label>
+            <textarea id="manualCharges" placeholder="e.g. Count 1: Theft (D Felony)" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnManualCancel">Cancel</button>
+        <button class="btn btn-primary" id="btnManualSave">Save Case</button>
       </div>
     </div>
   </div>

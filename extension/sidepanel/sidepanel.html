@@ -216,6 +216,9 @@
             <span class="results-count-pill" id="resultsCountPill">0 Cases</span>
             <span class="results-searches-pill" id="resultsSearchesPill">from 1 search</span>
           </div>
+          <button type="button" class="btn btn-sm btn-outline" id="btnManualEntry" title="Manually add a case missing from your search results">
+            <span>➕ Add Case Manually</span>
+          </button>
           <button type="button" class="btn btn-sm btn-outline" id="btnScanAnotherPage" title="Scan another MyCase name, married name, or county search">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span>Scan Another Name/County</span>
@@ -626,10 +629,22 @@
         <p class="modal-subtext">
           Our scraper found <b id="parityCaseCount">0</b> case(s) on this page. Review the list below and compare it to
           what you see on the MyCase search results page. If any cases are missing, click <b>Go Back &amp; Retry</b> and
-          try the scan again.
+          try the scan again, or you can add them manually later.
         </p>
-        <div class="modal-callout-info" id="parityCaseList">
-          <!-- Dynamically populated -->
+        <div class="modal-callout-info parity-grid-container">
+          <table class="parity-grid" id="parityCaseGrid">
+            <thead>
+              <tr>
+                <th>Case Number</th>
+                <th>Case Type</th>
+                <th>Charges</th>
+                <th>Disposition Date</th>
+              </tr>
+            </thead>
+            <tbody id="parityCaseList">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
         </div>
         <div class="modal-callout-warning">
           <b>⚠️ 92-County Rule Reminder:</b> This scan only covers the current MyCase search results. Under
@@ -683,6 +698,47 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" id="btnModalCancel">Go Back &amp; Verify</button>
         <button class="btn btn-danger" id="btnModalConfirm">I Confirm All Charges Are Included</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Manual Case Entry ═══ -->
+  <div class="modal-overlay" id="manualEntryModal" style="display:none">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-icon-alert">✍️</div>
+        <h3>Add Case Manually</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-lead">Enter case details if the MyCase scraper failed to extract them.</p>
+        <form id="manualEntryForm" class="profile-form">
+          <div class="form-group">
+            <label for="manualCaseNumber">Case Number *</label>
+            <input type="text" id="manualCaseNumber" placeholder="e.g. 49D01-1605-FD-000123" required>
+          </div>
+          <div class="form-group">
+            <label for="manualCaseTitle">Case Title</label>
+            <input type="text" id="manualCaseTitle" placeholder="e.g. State of Indiana v. John Doe">
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label for="manualCaseType">Case Type (Code) *</label>
+              <input type="text" id="manualCaseType" placeholder="e.g. FD, CM" required>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label for="manualDispositionDate">Disposition/Filed Date *</label>
+              <input type="date" id="manualDispositionDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="manualCharges">Charges (Optional)</label>
+            <textarea id="manualCharges" placeholder="e.g. Count 1: Theft (D Felony)" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnManualCancel">Cancel</button>
+        <button class="btn btn-primary" id="btnManualSave">Save Case</button>
       </div>
     </div>
   </div>

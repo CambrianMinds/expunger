@@ -39,23 +39,22 @@ export function showParityModal(cases, searchContext, mergeMode) {
   if (listEl) {
     listEl.innerHTML = '';
     if (cases.length === 0) {
-      listEl.innerHTML = '<em style="font-size:0.7rem;color:var(--text-muted)">No cases found on this page.</em>';
+      listEl.innerHTML = '<tr><td colspan="4"><em style="font-size:0.7rem;color:var(--text-muted)">No cases found on this page.</em></td></tr>';
     } else {
       cases.slice(0, 20).forEach(c => {
-        const item = document.createElement('div');
+        const item = document.createElement('tr');
         item.className = 'modal-case-item';
         item.innerHTML = `
-          <span class="modal-case-num">${escapeHtml(c.case_number || 'Unknown')}</span>
-          <span class="modal-case-type">${escapeHtml(c.case_type || '')}</span>
+          <td><span class="modal-case-num">${escapeHtml(c.case_number || 'Unknown')}</span></td>
+          <td><span class="modal-case-type">${escapeHtml(c.case_type || '')}</span></td>
+          <td><span class="modal-case-charges">${escapeHtml(c.charges || 'None')}</span></td>
+          <td><span class="modal-case-date">${escapeHtml(c.filed || '')}</span></td>
         `;
         listEl.appendChild(item);
       });
       if (cases.length > 20) {
-        const overflow = document.createElement('div');
-        overflow.style.fontSize = '0.68rem';
-        overflow.style.color = 'var(--text-muted)';
-        overflow.style.marginTop = '6px';
-        overflow.textContent = `…and ${cases.length - 20} more case${cases.length - 20 === 1 ? '' : 's'}`;
+        const overflow = document.createElement('tr');
+        overflow.innerHTML = `<td colspan="4" style="font-size:0.68rem;color:var(--text-muted);margin-top:6px;">…and ${cases.length - 20} more case${cases.length - 20 === 1 ? '' : 's'}</td>`;
         listEl.appendChild(overflow);
       }
     }
@@ -268,6 +267,65 @@ $('#btnScanAnotherPage')?.addEventListener('click', () => {
   if (scanBtn) {
     scanBtn.scrollIntoView({ behavior: 'smooth' });
   }
+});
+
+// ─── Manual Case Entry ─────────────────────────────────────────────
+$('#btnManualEntry')?.addEventListener('click', () => {
+  $('#manualEntryForm').reset();
+  $('#manualEntryModal').style.display = 'flex';
+});
+
+$('#btnManualCancel')?.addEventListener('click', () => {
+  $('#manualEntryModal').style.display = 'none';
+});
+
+$('#btnManualSave')?.addEventListener('click', () => {
+  const form = $('#manualEntryForm');
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+  
+  const caseNumber = $('#manualCaseNumber').value.trim().toUpperCase();
+  const caseType = $('#manualCaseType').value.trim().toUpperCase();
+  const filed = $('#manualDispositionDate').value;
+  const title = $('#manualCaseTitle').value.trim();
+  const charges = $('#manualCharges').value.trim();
+
+  // Validate basic format XXDXX-YYMM-CC-NNNNNN
+  if (!caseNumber.includes('-')) {
+    showToast('Case number must be in the format XXDXX-YYMM-CC-NNNNNN', 'error', 4000);
+    return;
+  }
+  
+  const countyCode = caseNumber.substring(0, 2);
+
+  const newCase = {
+    case_number: caseNumber,
+    case_type: caseType,
+    filed: filed,
+    title: title,
+    charges: charges,
+    court: countyCode ? `County ${countyCode}` : 'Unknown Court',
+    status: 'Decided', // Assumed for manual entries
+    searchContext: 'Manual Entry',
+    searchQueries: ['Manual Entry'],
+    isManualEntry: true
+  };
+
+  AppState.currentCases.push(newCase);
+  
+  if (window.IndianaExpungement?.analyzeAll) {
+    AppState.currentReport = window.IndianaExpungement.analyzeAll(AppState.currentCases);
+  }
+
+  persistScanResults();
+  updateBatchPanelUI();
+  renderResults();
+  updateChecklist();
+  
+  $('#manualEntryModal').style.display = 'none';
+  showToast(`Successfully added case ${caseNumber} manually.`, 'success', 4000);
 });
 
 // Auto-suggest aliases from search queries (IC § 35-38-9-8(b)(1))

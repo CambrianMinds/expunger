@@ -109,6 +109,11 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       switchTab('scan');
       return;
     }
+    
+    if (AppState.currentReport.crossCountyBlock) {
+      showToast('Cannot generate: Multi-county petitions must be filed within 365 days of each other (IC § 35-38-9-9(d)). Adjust dates or exclude cases.', 'error', 6000);
+      return;
+    }
 
     const acksReady = $('#ackOneShot')?.checked &&
                       $('#ackAllCounties')?.checked &&
@@ -160,6 +165,10 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       }
       if (!AppState.currentReport || AppState.currentReport.summary.eligible === 0) {
         throw new Error('No eligible cases found. Scan a MyCase page first.');
+      }
+      
+      if (AppState.currentReport.crossCountyBlock) {
+        throw new Error('Cannot generate: Multi-county petitions must be filed within 365 days of each other (IC § 35-38-9-9(d)).');
       }
 
       // Determine target county (supports multi-county filing selection)

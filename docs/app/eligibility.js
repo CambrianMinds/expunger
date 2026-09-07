@@ -238,6 +238,7 @@ const IndianaExpungement = (() => {
       statuteLabel: null,
       waitingPeriod: null,
       waitingPeriodMet: false,
+      eligibilityDate: null,
       reason: '',
       warnings: [],
       filingFee: null,
@@ -287,6 +288,10 @@ const IndianaExpungement = (() => {
       result.statuteLabel = 'Arrest/Infraction Expungement (§ 1)';
       result.waitingPeriod = 1;
       result.waitingPeriodMet = elapsed >= 1;
+      if (dispositionDate) {
+        result.eligibilityDate = new Date(dispositionDate);
+        result.eligibilityDate.setFullYear(result.eligibilityDate.getFullYear() + result.waitingPeriod);
+      }
       result.filingFee = 0;
       result.grantType = 'mandatory';
       result.eligible = result.waitingPeriodMet;
@@ -302,6 +307,10 @@ const IndianaExpungement = (() => {
       result.statuteLabel = 'Misdemeanor Expungement (§ 2)';
       result.waitingPeriod = 5;
       result.waitingPeriodMet = elapsed >= 5;
+      if (dispositionDate) {
+        result.eligibilityDate = new Date(dispositionDate);
+        result.eligibilityDate.setFullYear(result.eligibilityDate.getFullYear() + result.waitingPeriod);
+      }
       result.filingFee = 157;
       result.grantType = 'mandatory';
       result.eligible = result.waitingPeriodMet;
@@ -324,6 +333,10 @@ const IndianaExpungement = (() => {
         result.statuteLabel = 'Felony Expungement (§ 3)';
         result.waitingPeriod = 8;
         result.waitingPeriodMet = elapsed >= 8;
+        if (dispositionDate) {
+          result.eligibilityDate = new Date(dispositionDate);
+          result.eligibilityDate.setFullYear(result.eligibilityDate.getFullYear() + result.waitingPeriod);
+        }
         result.filingFee = 157;
         result.grantType = 'mandatory';
 
@@ -344,6 +357,10 @@ const IndianaExpungement = (() => {
       result.statuteLabel = 'Higher Felony Expungement (§ 4 - Discretionary)';
       result.waitingPeriod = 10;
       result.waitingPeriodMet = elapsed >= 10;
+      if (dispositionDate) {
+        result.eligibilityDate = new Date(dispositionDate);
+        result.eligibilityDate.setFullYear(result.eligibilityDate.getFullYear() + result.waitingPeriod);
+      }
       result.filingFee = 157;
       result.grantType = 'discretionary';
       result.eligible = result.waitingPeriodMet;
@@ -387,6 +404,55 @@ const IndianaExpungement = (() => {
   }
 
   /**
+   * Enforces the IC § 35-38-9-9(d) 365-day multi-county filing rule.
+   * If a user has eligible cases in County A, but ineligible cases in County B
+   * that will not become eligible within 365 days of today, they should be BLOCKED
+   * from filing County A today. (If they filed A today, B would never be eligible).
+   * 
+   * @param {Array} cases - Array of cases with .eligibility attached
+   * @returns {Object} Block status and details
+   */
+  function checkCrossCounty365DaySafety(cases) {
+    let hasEligibleCases = false;
+    let maxEligibilityDate = new Date();
+    let conflictingCases = [];
+
+    const now = new Date();
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(now.getFullYear() + 1);
+
+    for (const c of cases) {
+      if (!c.eligibility) continue;
+      
+      if (c.eligibility.eligible) {
+        hasEligibleCases = true;
+      }
+
+      if (!c.eligibility.eligible && c.eligibility.eligibilityDate) {
+        if (c.eligibility.eligibilityDate > maxEligibilityDate) {
+          maxEligibilityDate = c.eligibility.eligibilityDate;
+        }
+        if (c.eligibility.eligibilityDate > oneYearFromNow) {
+          conflictingCases.push(c);
+        }
+      }
+    }
+
+    if (hasEligibleCases && conflictingCases.length > 0) {
+      const conflictingCounties = [...new Set(conflictingCases.map(c => c.court || 'Unknown Court'))];
+      return {
+        isSafe: false,
+        reason: 'Cross-County 365-Day Window Violation',
+        message: `You have eligible cases ready to file, but you also have cases in ${conflictingCounties.join(', ')} that will not be eligible for over a year (until ${maxEligibilityDate.toLocaleDateString()}). If you file your eligible cases today, you will be permanently locked out of expunging the remaining cases under the lifetime one-shot rule.`,
+        maxEligibilityDate: maxEligibilityDate,
+        conflictingCounties: conflictingCounties
+      };
+    }
+
+    return { isSafe: true };
+  }
+
+  /**
    * Run full eligibility analysis on an array of cases.
    * Returns a structured report grouped by county and statute section.
    * 
@@ -405,7 +471,8 @@ const IndianaExpungement = (() => {
         pending: 0,
         totalFilingFee: 0,
         byStatute: {}
-      }
+      },
+      crossCountyBlock: { isSafe: true }
     };
 
     for (const [countyCode, group] of Object.entries(countyGroups)) {
@@ -446,6 +513,14 @@ const IndianaExpungement = (() => {
 
       report.counties[countyCode] = countyReport;
     }
+
+    // After evaluating all cases, check cross-county safety
+    // Flatten cases that have had their eligibility evaluated
+    const evaluatedCases = [];
+    for (const group of Object.values(report.counties)) {
+      evaluatedCases.push(...group.cases);
+    }
+    report.crossCountyBlock = checkCrossCounty365DaySafety(evaluatedCases);
 
     return report;
   }
