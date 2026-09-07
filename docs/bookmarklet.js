@@ -227,7 +227,9 @@
       const title = document.title || '';
       const titleMatch = title.match(/MyCase\s*[-–]\s*(.+)/i);
       if (titleMatch && titleMatch[1]) return titleMatch[1].trim();
-    } catch (_) {}
+    } catch (_) {
+      /* Fallback to default search context if parsing fails */
+    }
     return 'MyCase Search';
   }
 
@@ -373,7 +375,9 @@
              if (ctx) {
                caseData.caseToken = ctx.CaseToken || ctx.CaseID || (ctx.model && (ctx.model.CaseToken || ctx.model.CaseID)) || '';
              }
-           } catch (e) {}
+           } catch (e) {
+             /* Knockout dataFor binding unavailable for row */
+           }
         }
 
         if (caseData.case_number) {

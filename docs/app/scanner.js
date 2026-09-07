@@ -180,14 +180,14 @@ export function persistScanResults() {
       report: AppState.currentReport,
       searchBatches: AppState.searchBatches
     });
-  } catch (_) {}
+  } catch (_) { /* chrome.runtime not available (e.g. devtools reload) — ignore */ }
   try {
     localStorage.setItem('lastScanResults', JSON.stringify({
       cases: AppState.currentCases,
       report: AppState.currentReport,
       searchBatches: AppState.searchBatches
     }));
-  } catch (_) {}
+  } catch (_) { /* localStorage unavailable in this context — ignore */ }
 }
 
 // ─── Multi-Search Batch & UI State ─────────────────────────────────
@@ -537,7 +537,7 @@ if (btnUploadHtml && htmlUpload) {
             throw new Error('JSON does not contain a recognized case list structure.');
           }
         } catch (jsonErr) {
-          throw new Error('Invalid JSON file format: ' + jsonErr.message);
+          throw new Error('Invalid JSON file format: ' + jsonErr.message, { cause: jsonErr });
         }
       } else {
         // HTML parsing

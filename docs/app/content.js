@@ -16,9 +16,13 @@ if (typeof window !== 'undefined' && !window._odysseyInterceptionActive) {
               window._odysseyDataInterceptedCache.set(url, data);
               window.dispatchEvent(new CustomEvent('OdysseyDataIntercepted', { detail: { url, data } }));
             }
-          }).catch(() => {});
+          }).catch(() => {
+            /* Non-JSON payload or stream unreadable */
+          });
         }
-      } catch (e) {}
+      } catch (_e) {
+        /* Network intercept error in page context */
+      }
       return response;
     };
   }
@@ -41,7 +45,9 @@ if (typeof window !== 'undefined' && !window._odysseyInterceptionActive) {
               window.dispatchEvent(new CustomEvent('OdysseyDataIntercepted', { detail: { url, data } }));
             }
           }
-        } catch (e) {}
+        } catch (_e) {
+          /* responseText is not JSON or unreadable */
+        }
       });
       return _origSend.apply(this, args);
     };
@@ -263,7 +269,9 @@ const MyCaseScraper = (() => {
              if (ctx) {
                caseData.caseToken = ctx.CaseToken || ctx.CaseID || (ctx.model && (ctx.model.CaseToken || ctx.model.CaseID)) || '';
              }
-           } catch (e) {}
+           } catch (e) {
+             /* Knockout dataFor binding unavailable for row */
+           }
         }
 
         if (caseData.case_number) {
@@ -597,7 +605,9 @@ const MyCaseScraper = (() => {
       const title = rootElement.title || (rootElement === document ? document.title : '');
       const titleMatch = title.match(/MyCase\s*[-–]\s*(.+)/i);
       if (titleMatch && titleMatch[1]) return titleMatch[1].trim();
-    } catch (_) {}
+    } catch (_) {
+      /* Fallback to default search context if parsing fails */
+    }
     return 'MyCase Search';
   }
 
@@ -669,7 +679,9 @@ if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage)
 
   try {
     chrome.runtime.sendMessage({ action: 'contentScriptLoaded', url: window.location.href });
-  } catch (_) {}
+  } catch (_) {
+    /* Extension messaging unavailable in non-extension or invalidated context */
+  }
 }
 
 // Export for browser and node

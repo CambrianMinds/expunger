@@ -13,6 +13,8 @@
     "test:i18n": "node scripts/check-i18n.js",
     "test:disclaimers": "node scripts/check-disclaimers.js",
     "test:canary": "node scripts/canary/run-canary.js",
+    "sync:pro": "node scripts/sync-repos.js",
+    "sync:from-pro": "node scripts/sync-repos.js --from-pro",
     "test": "npm run i18n && jest && npm run test:parity && npm run test:i18n && npm run test:disclaimers",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
