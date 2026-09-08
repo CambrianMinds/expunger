@@ -22,14 +22,15 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Install Playwright Chromium
+      run: npx playwright install --with-deps chromium
+
     - name: Run Tests (Includes Parity, Jest, i18n, and Disclaimers)
       run: npm test
       
     - name: Run Linter
       run: npm run lint --if-present
       
-    - name: Install Playwright Chromium
-      run: npx playwright install --with-deps chromium
 
     - name: Run Playwright tests
       run: npx playwright test
