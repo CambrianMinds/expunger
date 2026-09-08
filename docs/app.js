@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDatePresets();
   initAuditChecklist();
   initDocumentModal();
+  initRulesEngineModal();
   initGuideTabs();
   initCopyButtons();
   initMobileNav();
@@ -424,6 +425,53 @@ function initDocumentModal() {
 }
 
 /* ==========================================================================
+   4b. Statutory Rules Engine Floating Modal
+   ========================================================================== */
+function initRulesEngineModal() {
+  const modal = document.getElementById('rulesEngineModal');
+  const closeBtn = document.getElementById('rulesModalCloseBtn');
+  const openBtns = document.querySelectorAll('#openRulesModalBtn, .open-rules-btn-alt, a[href="#assessment"], a[href="#eligibility"]');
+  if (!modal) return;
+
+  function openModal() {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    const selectedRadio = document.querySelector('input[name="calcTier"]:checked');
+    if (selectedRadio) {
+      selectedRadio.dispatchEvent(new Event('change'));
+    }
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  openBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
+  });
+
+  if (window.location.hash === '#assessment' || window.location.hash === '#eligibility') {
+    openModal();
+  }
+}
+
+/* ==========================================================================
    5. Record Audit Checklist
    ========================================================================== */
 function initAuditChecklist() {
@@ -610,12 +658,12 @@ function initHashExpansion() {
       if (parentDetails) {
         parentDetails.open = true;
       }
-      if (cleanId === 'how-it-works' || cleanId === 'workflow' || cleanId === 'instructions') {
-        const hiw = document.getElementById('how-it-works-card');
-        if (hiw) hiw.open = true;
-      } else if (cleanId === 'assessment' || cleanId === 'eligibility') {
-        const elg = document.getElementById('eligibility-card');
-        if (elg) elg.open = true;
+      if (cleanId === 'assessment' || cleanId === 'eligibility') {
+        const rulesModal = document.getElementById('rulesEngineModal');
+        if (rulesModal) {
+          rulesModal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
       } else if (cleanId === 'documents' || cleanId === 'pleadings') {
         const pld = document.getElementById('pleadings-details');
         if (pld) pld.open = true;
