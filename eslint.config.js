@@ -11,7 +11,8 @@ module.exports = [
       "test-results/**",
       "node_modules/**",
       "archive/**",
-      ".agents/**"
+      ".agents/**",
+      "temp/**"
     ]
   },
   pluginJs.configs.recommended,

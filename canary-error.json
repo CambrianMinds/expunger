@@ -1,5 +1,0 @@
-{
-  "timestamp": "2026-09-06T04:00:44.689Z",
-  "message": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#searchByTabs a, a[role=\"tab\"]').filter({ hasText: /^Name$/i }).first() to be visible\u001b[22m\n",
-  "stack": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#searchByTabs a, a[role=\"tab\"]').filter({ hasText: /^Name$/i }).first() to be visible\u001b[22m\n\n    at runCanary (D:\\projects\\indiana-expunge\\scripts\\canary\\run-canary.js:42:19)"
-}

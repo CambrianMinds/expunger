@@ -55,4 +55,7 @@ mycase-expungement-data*.json
 # Local workspace scratch & independent repo mirrors
 legal-help-suite/
 docs/pro/
+temp/
+canary-error.json
+
 

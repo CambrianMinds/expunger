@@ -103,21 +103,60 @@ const MyCaseScraper = (() => {
     try {
       // Knockout is only available in the live DOM
       if (rootElement !== document) return null;
+      if (typeof ko === 'undefined' || !ko.dataFor) return null;
 
-      // The Odyssey SPA stores its view model in a known container
-      const container = document.getElementById('OD_BODY');
-      if (!container) return null;
-
-      // Try accessing the Knockout context
-      const koContext = ko && ko.dataFor ? ko.dataFor(container) : null;
-      if (!koContext) return null;
-
-      // Navigate to the search results observable
       let results = null;
-      if (koContext.ob && koContext.ob.Results) {
-        results = typeof koContext.ob.Results === 'function'
-          ? koContext.ob.Results()
-          : koContext.ob.Results;
+
+      // 1. Check results table / ViewModel
+      const table = rootElement.querySelector ? rootElement.querySelector('table') : null;
+      if (table) {
+        const tableData = ko.dataFor(table);
+        if (tableData && tableData.ob && tableData.ob.Results) {
+          results = typeof tableData.ob.Results === 'function'
+            ? tableData.ob.Results()
+            : tableData.ob.Results;
+        }
+      }
+
+      // 2. Check row context's parent ViewModel
+      if (!results && rootElement.querySelector) {
+        const firstRow = rootElement.querySelector('tr.result-row');
+        if (firstRow && ko.contextFor) {
+          const ctx = ko.contextFor(firstRow);
+          if (ctx && ctx.$parent && ctx.$parent.ob && ctx.$parent.ob.Results) {
+            results = typeof ctx.$parent.ob.Results === 'function'
+              ? ctx.$parent.ob.Results()
+              : ctx.$parent.ob.Results;
+          }
+        }
+      }
+
+      // 3. Direct Row Data Extraction
+      if (!results && rootElement.querySelectorAll) {
+        const rows = rootElement.querySelectorAll('tr.result-row');
+        if (rows && rows.length > 0) {
+          const directCases = [];
+          rows.forEach((r, idx) => {
+            const data = ko.dataFor(r);
+            if (data && (data.CaseNumber || data.CaseID || data.Style)) {
+              directCases.push(normalizeKnockoutModel(data, idx));
+            }
+          });
+          if (directCases.length > 0) return directCases;
+        }
+      }
+
+      // 4. Fallback to legacy OD_BODY container
+      if (!results && rootElement.getElementById) {
+        const container = rootElement.getElementById('OD_BODY');
+        if (container) {
+          const koContext = ko.dataFor(container);
+          if (koContext && koContext.ob && koContext.ob.Results) {
+            results = typeof koContext.ob.Results === 'function'
+              ? koContext.ob.Results()
+              : koContext.ob.Results;
+          }
+        }
       }
 
       if (!results || !Array.isArray(results)) return null;

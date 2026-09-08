@@ -233,58 +233,106 @@
     return 'MyCase Search';
   }
 
+  function normalizeKnockoutModel(model, index, getValue) {
+    const caseNumber = getValue(model.CaseNumber) || '';
+    const style = getValue(model.Style) || '';
+    const court = getValue(model.Court) || '';
+    const caseType = getValue(model.CaseType) || '';
+    const caseSubType = getValue(model.CaseSubType) || '';
+    const fileDate = getValue(model.FileDate) || '';
+    const statusDate = getValue(model.CaseStatusDate) || '';
+    const status = getValue(model.CaseStatus) || '';
+    const charges = getValue(model.Charges) || '';
+    const parties = getValue(model.Parties) || '';
+    const attorneys = getValue(model.Attorneys) || '';
+    const caseToken = getValue(model.CaseToken) || getValue(model.CaseID) || '';
+
+    const fullCaseType = caseSubType ? `${caseType}, ${caseSubType}` : caseType;
+    const fullStatus = statusDate ? `${statusDate}, ${status}` : status;
+    const dispMatch = (statusDate || fullStatus).match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
+    const dispositionDate = dispMatch ? dispMatch[1] : (statusDate || '');
+
+    return {
+      index: index + 1,
+      case_number: caseNumber,
+      title: cleanHtml(style),
+      court: court,
+      case_type: fullCaseType,
+      filed: fileDate,
+      status: fullStatus,
+      dispositionDate: dispositionDate,
+      charges: cleanCharges(charges),
+      parties: parties,
+      attorneys: attorneys,
+      caseToken: caseToken,
+      _source: 'knockout'
+    };
+  }
+
   function tryKnockoutExtraction() {
     try {
-      const container = document.getElementById('OD_BODY');
-      if (!container) return null;
       if (typeof ko === 'undefined' || !ko.dataFor) return null;
 
-      const koContext = ko.dataFor(container);
-      if (!koContext) return null;
-
       let results = null;
-      if (koContext.ob && koContext.ob.Results) {
-        results = typeof koContext.ob.Results === 'function' ? koContext.ob.Results() : koContext.ob.Results;
+
+      // 1. Check results table / ViewModel
+      const table = document.querySelector('table');
+      if (table) {
+        const tableData = ko.dataFor(table);
+        if (tableData && tableData.ob && tableData.ob.Results) {
+          results = typeof tableData.ob.Results === 'function'
+            ? tableData.ob.Results()
+            : tableData.ob.Results;
+        }
       }
+
+      // 2. Check row context's parent ViewModel
+      if (!results) {
+        const firstRow = document.querySelector('tr.result-row');
+        if (firstRow && ko.contextFor) {
+          const ctx = ko.contextFor(firstRow);
+          if (ctx && ctx.$parent && ctx.$parent.ob && ctx.$parent.ob.Results) {
+            results = typeof ctx.$parent.ob.Results === 'function'
+              ? ctx.$parent.ob.Results()
+              : ctx.$parent.ob.Results;
+          }
+        }
+      }
+
+      // 3. Direct Row Data Extraction
+      if (!results) {
+        const rows = document.querySelectorAll('tr.result-row');
+        if (rows && rows.length > 0) {
+          const getValue = (prop) => (!prop ? '' : typeof prop === 'function' ? prop() : prop);
+          const directCases = [];
+          rows.forEach((r, idx) => {
+            const data = ko.dataFor(r);
+            if (data && (data.CaseNumber || data.CaseID || data.Style)) {
+              directCases.push(normalizeKnockoutModel(data, idx, getValue));
+            }
+          });
+          if (directCases.length > 0) return directCases;
+        }
+      }
+
+      // 4. Fallback to legacy OD_BODY container
+      if (!results) {
+        const container = document.getElementById('OD_BODY');
+        if (container) {
+          const koContext = ko.dataFor(container);
+          if (koContext && koContext.ob && koContext.ob.Results) {
+            results = typeof koContext.ob.Results === 'function'
+              ? koContext.ob.Results()
+              : koContext.ob.Results;
+          }
+        }
+      }
+
       if (!results || !Array.isArray(results)) return null;
 
       const getValue = (prop) => (!prop ? '' : typeof prop === 'function' ? prop() : prop);
 
-      return results.map((model, index) => {
-        const caseNumber = getValue(model.CaseNumber) || '';
-        const style = getValue(model.Style) || '';
-        const court = getValue(model.Court) || '';
-        const caseType = getValue(model.CaseType) || '';
-        const caseSubType = getValue(model.CaseSubType) || '';
-        const fileDate = getValue(model.FileDate) || '';
-        const statusDate = getValue(model.CaseStatusDate) || '';
-        const status = getValue(model.CaseStatus) || '';
-        const charges = getValue(model.Charges) || '';
-        const parties = getValue(model.Parties) || '';
-        const attorneys = getValue(model.Attorneys) || '';
-        const caseToken = getValue(model.CaseToken) || getValue(model.CaseID) || '';
-
-        const fullCaseType = caseSubType ? `${caseType}, ${caseSubType}` : caseType;
-        const fullStatus = statusDate ? `${statusDate}, ${status}` : status;
-        const dispMatch = (statusDate || fullStatus).match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
-        const dispositionDate = dispMatch ? dispMatch[1] : (statusDate || '');
-
-        return {
-          index: index + 1,
-          case_number: caseNumber,
-          title: cleanHtml(style),
-          court: court,
-          case_type: fullCaseType,
-          filed: fileDate,
-          status: fullStatus,
-          dispositionDate: dispositionDate,
-          charges: cleanCharges(charges),
-          parties: parties,
-          attorneys: attorneys,
-          caseToken: caseToken,
-          _source: 'knockout'
-        };
-      });
+      return results.map((model, index) => normalizeKnockoutModel(model, index, getValue));
     } catch (e) {
       console.warn('[Bookmarklet] Knockout extraction unavailable:', e);
       return null;
