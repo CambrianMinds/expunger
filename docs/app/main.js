@@ -45,11 +45,39 @@ function setupThemeToggle() {
   });
 }
 
+// Setup Pro Se Disclaimer Entry Gate
+function setupDisclaimerGate() {
+  const gate = document.getElementById('disclaimerGate');
+  const ackCheck = document.getElementById('gateAckCheck');
+  const acceptBtn = document.getElementById('btnAcceptGate');
+  if (!gate) return;
+
+  const isAccepted = localStorage.getItem('expungement_pro_se_acknowledged');
+  if (!isAccepted) {
+    gate.style.display = 'flex';
+  }
+
+  ackCheck?.addEventListener('change', () => {
+    if (acceptBtn) {
+      acceptBtn.disabled = !ackCheck.checked;
+    }
+  });
+
+  acceptBtn?.addEventListener('click', () => {
+    if (!ackCheck?.checked) return;
+    try {
+      localStorage.setItem('expungement_pro_se_acknowledged', 'true');
+    } catch (_) {}
+    gate.style.display = 'none';
+  });
+}
+
 // ─── Initialization ────────────────────────────────────────────────
 async function init() {
-  // Bind guide and theme actions
+  // Bind guide, theme, and entry disclaimer actions
   setupGuideListeners();
   setupThemeToggle();
+  setupDisclaimerGate();
 
   // Load saved state & bind formatters
   setupInputFormatting();

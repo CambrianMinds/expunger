@@ -75,11 +75,10 @@
       </a>
 
       <ul class="nav-links">
+        <li><a href="#how-it-works" class="nav-link" data-i18n="nav_how_to_file">How It Works</a></li>
         <li><a href="#assessment" class="nav-link" data-i18n="nav_eligibility">Eligibility</a></li>
         <li><a href="#oneshot" class="nav-link" data-i18n="nav_lifetime_limit">Lifetime Limit</a></li>
         <li><a href="#documents" class="nav-link" data-i18n="nav_pleadings">Pleadings</a></li>
-        <li><a href="#workflow" class="nav-link" data-i18n="nav_how_to_file">How to File</a></li>
-        <li><a href="#tech" class="nav-link">Technical Architecture</a></li>
         <li><a href="#faq" class="nav-link" data-i18n="nav_faq">FAQ</a></li>
         <li><a href="#mission" class="nav-link" data-i18n="nav_mission">Mission</a></li>
       </ul>
@@ -89,7 +88,7 @@
         <a href="https://cambrianminds.github.io/indiana-expunge-pro/" target="_blank" rel="noopener noreferrer"
           class="nav-pro-btn" title="Legal Aid &amp; Defense Practice Pro Suite (IC § 35-38-9)">
           <span class="pro-icon">⚖️</span>
-          <span>Pro Suite</span>
+          <span class="pro-text">Pro Suite</span>
           <span class="pro-arrow" aria-hidden="true">↗</span>
         </a>
 
@@ -127,7 +126,7 @@
           </svg>
           <span>GitHub</span>
         </a>
-        <button class="mobile-nav-toggle" aria-label="Toggle navigation menu">Menu</button>
+        <button class="mobile-nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">Menu</button>
       </div>
     </div>
   </header>
@@ -139,12 +138,15 @@
         <span data-i18n="feat_2_desc">A Free Public Initiative &bull; Pursuant to Indiana Code § 35-38-9</span>
       </div>
 
-      <h1>Your Second Chance Starts Here. <span class="hero-subhead">No attorney required to file.</span></h1>
+      <h1>Automated Indiana Expungement Forms—For Free.</h1>
 
       <p class="hero-subtitle">
-        This free, open-source tool helps you check your eligibility, retrieve your public
-        records from MyCase, and compile all 10 required filings — entirely in your browser, no account required.
+        Instantly turn your MyCase records into a fully completed, court-ready expungement packet. This tool automatically extracts your case numbers and charges to fill out all 10 mandatory PDFs for you. Zero typing. Zero hidden fees. 100% private.
       </p>
+
+      <div class="hero-legal-note">
+        <span>Pursuant to IC § 35-38-9 · Pro Se Clerical Automation (Not Legal Advice) · 100% Local In-Browser</span>
+      </div>
 
       <div class="hero-cta-row">
         <a href="app/app.html" class="btn btn-primary hero-btn-primary">
@@ -154,8 +156,15 @@
             <line x1="8" y1="21" x2="16" y2="21"></line>
             <line x1="12" y1="17" x2="12" y2="21"></line>
           </svg>
-          <span>Launch Web App (No Install Needed)</span>
+          <span>Launch Web App (Zero Install)</span>
           <span class="btn-arrow" aria-hidden="true">➔</span>
+        </a>
+        <a href="#how-it-works" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>How It Works (3 Steps)</span>
         </a>
         <a href="#assessment" class="btn btn-secondary" data-i18n="btn_check_eligibility">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -163,234 +172,400 @@
             <polyline points="9 11 12 14 22 4"></polyline>
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
           </svg>
-          <span>Check Your Statutory Eligibility</span>
-        </a>
-        <a href="#workflow" class="btn btn-secondary" data-i18n="btn_how_to_prepare">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          <span>How to Prepare Your Petition</span>
+          <span>Check Statutory Eligibility</span>
         </a>
       </div>
 
       <div class="hero-trust-bar">
         <div class="trust-item">
           <h3 class="trust-num" data-i18n="feat_1_title">100% Private</h3>
-          <p class="trust-label" data-i18n="feat_1_desc">All processing executes locally in your browser — zero
-            tracking, zero logs</p>
+          <p class="trust-label" data-i18n="feat_1_desc">All processing executes locally in your browser — zero tracking, zero logs</p>
         </div>
         <div class="trust-item">
           <h3 class="trust-num">$0 to Use</h3>
-          <p class="trust-label">Completely free open-source legal aid. No lawyer fees, subscriptions, or paywalls</p>
+          <p class="trust-label">Free open-source public legal tool. No lawyer fees, subscriptions, or paywalls</p>
         </div>
         <div class="trust-item">
           <h3 class="trust-num" data-i18n="feat_3_title">10 Court Pleadings</h3>
-          <p class="trust-label" data-i18n="feat_3_desc">Complete petition packet formatted pursuant to Indiana Trial
-            Rules</p>
+          <p class="trust-label" data-i18n="feat_3_desc">Complete petition packet formatted pursuant to Indiana Trial Rules</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Section 1: Interactive Self-Assessment Guide -->
-  <section class="section" id="assessment">
+  <!-- Dual Expandable Utility Cards: How It Works & Statutory Eligibility -->
+  <section class="section section-alt" id="workflow-section">
+    <span id="how-it-works" class="anchor-target"></span>
+    <span id="workflow" class="anchor-target"></span>
+    <span id="instructions" class="anchor-target"></span>
+    <span id="assessment" class="anchor-target"></span>
     <span id="eligibility" class="anchor-target"></span>
     <div class="container">
       <div class="section-header">
-        <span class="section-kicker">Eligibility Check</span>
-        <h2 class="section-title nowrap-title">Are You Eligible Under <span
-            class="nowrap">IC&nbsp;§&nbsp;35&#8209;38&#8209;9</span>?</h2>
+        <span class="section-kicker">Self-Help Reference</span>
+        <h2 class="section-title">Process &amp; Eligibility Overview</h2>
         <p class="section-lead">
-          Indiana's Second Chance law has different rules depending on your offense. Answer three quick questions
-          to see where you stand.
+          Understand the 3-step filing workflow and review Indiana statutory waiting periods before preparing your petition.
         </p>
       </div>
 
-      <div class="assessment-card">
-        <div class="assessment-steps">
-          <div>
-            <div class="step-header">
-              <span class="step-num">1</span>
-              <span>Select Your Offense Classification</span>
+      <div class="utility-grid">
+        <!-- Card 1: How It Works (Swapped to First) -->
+        <details class="utility-card" id="how-it-works-card" open>
+          <summary class="utility-card-summary">
+            <div class="utility-summary-text">
+              <span class="utility-badge">Workflow Overview</span>
+              <h3 class="utility-card-title">How It Works: 3 Steps to Court-Ready Filings</h3>
+              <p class="utility-card-sub">Pull MyCase dockets, auto-populate all 10 Trial Rule pleadings, and file with the county clerk.</p>
             </div>
-            <div class="tier-list">
-              <label class="tier-item" for="calcTier1">
-                <input type="radio" name="calcTier" id="calcTier1" value="tier1">
-                <div class="tier-content">
-                  <div class="tier-heading">
-                    <span>Arrests, Dismissals &amp; Non-Convictions</span>
-                    <span class="badge-tier badge-mandatory">Mandatory · 1 Year</span>
-                  </div>
-                  <div class="tier-text">IC § 35-38-9-1: Dropped charges, acquittals, or arrests without charges filed
-                    within 1 year.</div>
+            <svg class="disclosure-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="utility-card-body">
+            <div class="quickstart-grid">
+              <!-- Step 1 Card -->
+              <div class="quickstart-card">
+                <div class="quickstart-badge">
+                  <span class="step-badge-num">1</span>
+                  <span>Step 1: Pull Records</span>
                 </div>
-              </label>
+                <h4 class="quickstart-title">MyCase Record Extraction</h4>
+                <p class="quickstart-desc">
+                  Search your name on Indiana's public court portal, then export your complete docket and chronological case summary (CCS).
+                </p>
 
-              <label class="tier-item active" for="calcTier2">
-                <input type="radio" name="calcTier" id="calcTier2" value="tier2" checked>
-                <div class="tier-content">
-                  <div class="tier-heading">
-                    <span>Misdemeanors &amp; Reduced Felonies</span>
-                    <span class="badge-tier badge-mandatory">Mandatory · 5 Years</span>
+                <div class="bookmarklet-action-box">
+                  <span class="quickstart-drag-hint">Bookmarklet shortcut (Desktop):</span>
+                  <a class="bookmarklet-pill-btn"
+                    href="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();"
+                    draggable="true" title="Drag this button to your bookmarks bar">
+                    <span>Export MyCase Data</span>
+                  </a>
+                  <div class="bookmarklet-sub-actions">
+                    <button type="button" class="btn-preset btn-bookmarklet-copy"
+                      data-copy-code="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();">
+                      Copy Script
+                    </button>
+                    <a href="https://public.courts.in.gov/mycase" target="_blank" rel="noopener noreferrer" class="btn-preset">
+                      Open MyCase ↗
+                    </a>
                   </div>
-                  <div class="tier-text">IC § 35-38-9-2: Class A, B, or C misdemeanors and Class D/Level 6 felonies
-                    reduced to misdemeanors.</div>
+                  <p class="quickstart-microtip">
+                    <em>(Press <kbd>Ctrl+Shift+B</kbd> or <kbd>Cmd+Shift+B</kbd> if bookmarks bar is hidden)</em>
+                  </p>
                 </div>
-              </label>
+              </div>
 
-              <label class="tier-item" for="calcTier3">
-                <input type="radio" name="calcTier" id="calcTier3" value="tier3">
-                <div class="tier-content">
-                  <div class="tier-heading">
-                    <span>Class D &amp; Level 6 Felonies</span>
-                    <span class="badge-tier badge-mandatory">Mandatory · 8 Years</span>
-                  </div>
-                  <div class="tier-text">IC § 35-38-9-3: Non-violent Class D and Level 6 felonies that did not result in
-                    bodily injury.</div>
+              <!-- Step 2 Card -->
+              <div class="quickstart-card">
+                <div class="quickstart-badge">
+                  <span class="step-badge-num">2</span>
+                  <span>Step 2: Legal Audit</span>
                 </div>
-              </label>
+                <h4 class="quickstart-title">In-Browser Statutory Audit</h4>
+                <p class="quickstart-desc">
+                  The assistant instantly evaluates every conviction, dismissal, and arrest against Indiana Code § 35-38-9 requirements with 100% offline privacy.
+                </p>
+                <ul class="quickstart-feature-list">
+                  <li><strong>Waiting Clocks:</strong> Verifies 1-yr, 5-yr, and 8-yr statutory wait periods from sentencing</li>
+                  <li><strong>Tier Identification:</strong> Distinguishes mandatory grants vs. discretionary judge review</li>
+                  <li><strong>Fee Waiver Check:</strong> Analyzes eligibility to waive standard $157 civil filing fees</li>
+                  <li><strong>100% Client-Side:</strong> All parsing executes locally in your browser with zero telemetry</li>
+                </ul>
+              </div>
 
-              <label class="tier-item" for="calcTier4">
-                <input type="radio" name="calcTier" id="calcTier4" value="tier4">
-                <div class="tier-content">
-                  <div class="tier-heading">
-                    <span>Major Felonies (Non-Violent Levels 1–5)</span>
-                    <span class="badge-tier badge-discretionary">Discretionary · 8 Years</span>
-                  </div>
-                  <div class="tier-text">IC § 35-38-9-4: Major felony offenses. The trial court exercises judicial
-                    discretion.</div>
+              <!-- Step 3 Card -->
+              <div class="quickstart-card quickstart-card-primary">
+                <div class="quickstart-badge">
+                  <span class="step-badge-num">3</span>
+                  <span>Step 3: Generate Packet</span>
                 </div>
-              </label>
+                <h4 class="quickstart-title">Download All 10 Pleadings</h4>
+                <p class="quickstart-desc">
+                  Compile every required petition, confidential sheet, appearance form, proposed order, and notice formatted strictly to Indiana Trial Rule 10.
+                </p>
+                <div class="quickstart-action-box">
+                  <a href="app/app.html" class="btn btn-primary quickstart-launch-btn">
+                    <span>Launch Web App &amp; Generate</span>
+                    <span class="btn-arrow" aria-hidden="true">➔</span>
+                  </a>
+                  <p class="quickstart-filed-hint">
+                    Print, sign under penalty of perjury, and submit to the County Clerk in person or via Indiana E-File.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-              <label class="tier-item" for="calcTier5">
-                <input type="radio" name="calcTier" id="calcTier5" value="tier5">
-                <div class="tier-content">
-                  <div class="tier-heading">
-                    <span>Serious Violent Felonies</span>
-                    <span class="badge-tier badge-discretionary">Prosecutor Consent · 10 Yrs</span>
-                  </div>
-                  <div class="tier-text">IC § 35-38-9-5: Offenses involving serious bodily injury. Requires prosecutor's
-                    written approval.</div>
+            <!-- Compact Alternative Import Methods Drawer -->
+            <details class="alt-methods-drawer">
+              <summary class="alt-methods-summary">
+                <span>Prefer the Chrome Extension or Manual HTML/JSON File Upload? Click for setup options</span>
+                <span class="alt-arrow" aria-hidden="true">▾</span>
+              </summary>
+              <div class="guide-container" style="margin-top: 1.25rem;">
+                <div class="guide-tabs">
+                  <button class="guide-tab-btn active" data-tab="tab-chrome">
+                    <span>Chrome Extension (Sidepanel)</span>
+                  </button>
+                  <button class="guide-tab-btn" data-tab="tab-offline">
+                    <span>Saved HTML / JSON Upload</span>
+                  </button>
                 </div>
-              </label>
+
+                <!-- Tab 1: Chrome Extension -->
+                <div class="guide-pane active" id="tab-chrome">
+                  <ul class="guide-steps">
+                    <li class="guide-step">
+                      <span class="guide-step-num">1</span>
+                      <div class="guide-step-body">
+                        <h4>Clone or Download Repository</h4>
+                        <p>Download the project ZIP from GitHub or clone the repository to your computer:</p>
+                        <div class="snippet-box">
+                          <button class="btn-snippet-copy">Copy</button>
+                          <pre>git clone https://github.com/CambrianMinds/indiana-expungement-assistant.git</pre>
+                        </div>
+                      </div>
+                    </li>
+                    <li class="guide-step">
+                      <span class="guide-step-num">2</span>
+                      <div class="guide-step-body">
+                        <h4>Open Chrome Extensions</h4>
+                        <p>In Google Chrome, navigate to <code>chrome://extensions</code> in the address bar and switch on <b>Developer mode</b> in the top right.</p>
+                      </div>
+                    </li>
+                    <li class="guide-step">
+                      <span class="guide-step-num">3</span>
+                      <div class="guide-step-body">
+                        <h4>Load Unpacked</h4>
+                        <p>Click <b>Load unpacked</b> and select the <code>extension/</code> directory from the repository.</p>
+                      </div>
+                    </li>
+                    <li class="guide-step">
+                      <span class="guide-step-num">4</span>
+                      <div class="guide-step-body">
+                        <h4>Open Sidepanel on MyCase</h4>
+                        <p>Navigate to <code>public.courts.in.gov/mycase</code>, click the extension icon to open the side panel, and scan records side-by-side.</p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Tab 2: Offline HTML / JSON Upload -->
+                <div class="guide-pane" id="tab-offline">
+                  <ul class="guide-steps">
+                    <li class="guide-step">
+                      <span class="guide-step-num">1</span>
+                      <div class="guide-step-body">
+                        <h4>Save MyCase Search Page (HTML)</h4>
+                        <p>On <code>public.courts.in.gov/mycase</code>, after searching your name, press <kbd>Ctrl+S</kbd> (or right click &rarr; "Save Page As...") and save as <b>Webpage, HTML Only</b>.</p>
+                      </div>
+                    </li>
+                    <li class="guide-step">
+                      <span class="guide-step-num">2</span>
+                      <div class="guide-step-body">
+                        <h4>Upload in the Web App</h4>
+                        <p>Open the <a href="app/app.html">Web App</a>, switch to the <b>Import Records</b> tab, and drag-and-drop the saved <code>.html</code> file.</p>
+                      </div>
+                    </li>
+                    <li class="guide-step">
+                      <span class="guide-step-num">3</span>
+                      <div class="guide-step-body">
+                        <h4>Review &amp; Generate Filings</h4>
+                        <p>The parser extracts your cause numbers, verifies eligibility, and produces your 10 court documents locally.</p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <!-- Card 2: Statutory Eligibility Assessment (Swapped to Second) -->
+        <details class="utility-card" id="eligibility-card">
+          <summary class="utility-card-summary">
+            <div class="utility-summary-text">
+              <span class="utility-badge">Statutory Rules Engine</span>
+              <h3 class="utility-card-title">Check Statutory Eligibility (IC § 35-38-9 Waiting Periods)</h3>
+              <p class="utility-card-sub">Run your offense level and sentencing date against IC § 35-38-9 waiting periods and mandatory grant criteria.</p>
+            </div>
+            <svg class="disclosure-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="utility-card-body">
+            <div class="assessment-card">
+              <div class="assessment-steps">
+                <div>
+                  <div class="step-header">
+                    <span class="step-num">1</span>
+                    <span>Select Your Offense Classification</span>
+                  </div>
+                  <div class="tier-list">
+                    <label class="tier-item" for="calcTier1">
+                      <input type="radio" name="calcTier" id="calcTier1" value="tier1">
+                      <div class="tier-content">
+                        <div class="tier-heading">
+                          <span>Arrests, Dismissals &amp; Non-Convictions</span>
+                          <span class="badge-tier badge-mandatory">Mandatory · 1 Year</span>
+                        </div>
+                        <div class="tier-text">IC § 35-38-9-1: Dropped charges, acquittals, or arrests without charges filed within 1 year.</div>
+                      </div>
+                    </label>
+
+                    <label class="tier-item active" for="calcTier2">
+                      <input type="radio" name="calcTier" id="calcTier2" value="tier2" checked>
+                      <div class="tier-content">
+                        <div class="tier-heading">
+                          <span>Misdemeanors &amp; Reduced Felonies</span>
+                          <span class="badge-tier badge-mandatory">Mandatory · 5 Years</span>
+                        </div>
+                        <div class="tier-text">IC § 35-38-9-2: Class A, B, or C misdemeanors and Class D/Level 6 felonies reduced to misdemeanors.</div>
+                      </div>
+                    </label>
+
+                    <label class="tier-item" for="calcTier3">
+                      <input type="radio" name="calcTier" id="calcTier3" value="tier3">
+                      <div class="tier-content">
+                        <div class="tier-heading">
+                          <span>Class D &amp; Level 6 Felonies</span>
+                          <span class="badge-tier badge-mandatory">Mandatory · 8 Years</span>
+                        </div>
+                        <div class="tier-text">IC § 35-38-9-3: Non-violent Class D and Level 6 felonies that did not result in bodily injury.</div>
+                      </div>
+                    </label>
+
+                    <label class="tier-item" for="calcTier4">
+                      <input type="radio" name="calcTier" id="calcTier4" value="tier4">
+                      <div class="tier-content">
+                        <div class="tier-heading">
+                          <span>Major Felonies (Non-Violent Levels 1–5)</span>
+                          <span class="badge-tier badge-discretionary">Discretionary · 8 Years</span>
+                        </div>
+                        <div class="tier-text">IC § 35-38-9-4: Major felony offenses. The trial court exercises judicial discretion.</div>
+                      </div>
+                    </label>
+
+                    <label class="tier-item" for="calcTier5">
+                      <input type="radio" name="calcTier" id="calcTier5" value="tier5">
+                      <div class="tier-content">
+                        <div class="tier-heading">
+                          <span>Serious Violent Felonies</span>
+                          <span class="badge-tier badge-discretionary">Prosecutor Consent · 10 Yrs</span>
+                        </div>
+                        <div class="tier-text">IC § 35-38-9-5: Offenses involving serious bodily injury. Requires prosecutor's written approval.</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="step-header">
+                    <span class="step-num">2</span>
+                    <span id="dateStepLabel">Date of Conviction / Sentencing</span>
+                  </div>
+                  <div class="form-group">
+                    <label for="calcDate" id="calcDateLabel" class="form-label">Enter date of conviction / sentencing (NOT date of arrest):</label>
+                    <input type="date" id="calcDate" class="form-input-date">
+
+                    <!-- Date quick presets -->
+                    <div class="date-presets-row">
+                      <span class="date-presets-label">Quick test dates:</span>
+                      <button type="button" class="btn-preset" data-preset-years="1">1 Year Ago</button>
+                      <button type="button" class="btn-preset" data-preset-years="5">5 Years Ago</button>
+                      <button type="button" class="btn-preset" data-preset-years="8">8 Years Ago</button>
+                      <button type="button" class="btn-preset" data-preset-years="10">10 Years Ago</button>
+                    </div>
+
+                    <div class="form-hint" id="calcDateHint">
+                      <strong>Why Sentencing Date, NOT Arrest Date?</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for criminal convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested.
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="step-header">
+                    <span class="step-num">3</span>
+                    <span>Statutory Pre-Filing Requirements</span>
+                  </div>
+                  <div class="checklist-group">
+                    <label class="check-item">
+                      <input type="checkbox" id="calcCheckFines" checked>
+                      <span>All court costs, probation fees, fines, and victim restitution are fully satisfied</span>
+                    </label>
+                    <label class="check-item">
+                      <input type="checkbox" id="calcCheckPending" checked>
+                      <span>There are NO pending criminal charges against you in any court</span>
+                    </label>
+                    <label class="check-item">
+                      <input type="checkbox" id="calcCheckConvictions" checked>
+                      <span>No new criminal convictions within the applicable statutory waiting period</span>
+                    </label>
+                    <label class="check-item" id="checkSentenceRow" style="display: none;">
+                      <input type="checkbox" id="calcCheckSentence" checked>
+                      <span id="checkSentenceText">At least 3 years have passed since completing all terms of sentence (probation, parole, or DOC discharge)</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="assessment-result">
+                <div>
+                  <div class="result-status-box">
+                    <span id="resBadge" class="status-badge status-badge-success">Statutorily Eligible (Mandatory Grant)</span>
+                    <div id="resHeadline" class="result-title">Court Required By Law To Grant</div>
+                  </div>
+
+                  <!-- Visual Progress Meter -->
+                  <div class="progress-meter-container">
+                    <div class="progress-meter-header">
+                      <span>Statutory Waiting Progress</span>
+                      <span id="resProgressText" style="color: var(--text-primary); font-weight: 700;">100% Complete</span>
+                    </div>
+                    <div class="progress-meter-track">
+                      <div id="resProgressBar" class="progress-meter-fill" style="width: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div class="result-table">
+                    <div class="result-row">
+                      <span class="result-label">Statutory Basis:</span>
+                      <span id="resStatute" class="result-val">IC § 35-38-9-2</span>
+                    </div>
+                    <div class="result-row">
+                      <span class="result-label">Statutory Waiting Period:</span>
+                      <span id="resWaiting" class="result-val">5 Years</span>
+                    </div>
+                    <div class="result-row">
+                      <span class="result-label">Time Elapsed:</span>
+                      <span id="resElapsed" class="result-val">6.0 Years elapsed</span>
+                    </div>
+                    <div class="result-row">
+                      <span class="result-label">Judicial Standard:</span>
+                      <span id="resStandard" class="result-val">Mandatory (Court Shall Grant)</span>
+                    </div>
+                  </div>
+
+                  <div id="resExplanation" class="result-advisory">
+                    Under <b>IC § 35-38-9-2</b>, if you meet all statutory conditions, the Indiana court <b>SHALL</b> grant the expungement. The judge has no discretion to deny your petition.
+                  </div>
+                </div>
+
+                <div class="result-cta">
+                  <a href="app/app.html" class="btn btn-primary" style="width: 100%;">
+                    Prepare Your Court Petition Packet ➔
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div>
-            <div class="step-header">
-              <span class="step-num">2</span>
-              <span id="dateStepLabel">Date of Conviction / Sentencing</span>
-            </div>
-            <div class="form-group">
-              <label for="calcDate" id="calcDateLabel" class="form-label">Enter date of conviction / sentencing (NOT
-                date of arrest):</label>
-              <input type="date" id="calcDate" class="form-input-date">
-
-              <!-- Date quick presets -->
-              <div class="date-presets-row">
-                <span class="date-presets-label">Quick test dates:</span>
-                <button type="button" class="btn-preset" data-preset-years="1">1 Year Ago</button>
-                <button type="button" class="btn-preset" data-preset-years="5">5 Years Ago</button>
-                <button type="button" class="btn-preset" data-preset-years="8">8 Years Ago</button>
-                <button type="button" class="btn-preset" data-preset-years="10">10 Years Ago</button>
-              </div>
-
-              <div class="form-hint" id="calcDateHint">
-                <strong>Why Sentencing Date, NOT Arrest Date?</strong> Under Indiana Code § 35-38-9, the statutory
-                waiting clock for criminal convictions begins on the date of <em>conviction and sentencing</em> by the
-                court, NOT when you were arrested. If a case was pending or someone was on warrant for years before
-                sentencing, that pre-sentence time does not count toward the waiting period.
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="step-header">
-              <span class="step-num">3</span>
-              <span>Statutory Pre-Filing Requirements</span>
-            </div>
-            <div class="checklist-group">
-              <label class="check-item">
-                <input type="checkbox" id="calcCheckFines" checked>
-                <span>All court costs, probation fees, fines, and victim restitution are fully satisfied</span>
-              </label>
-              <label class="check-item">
-                <input type="checkbox" id="calcCheckPending" checked>
-                <span>There are NO pending criminal charges against you in any court</span>
-              </label>
-              <label class="check-item">
-                <input type="checkbox" id="calcCheckConvictions" checked>
-                <span>No new criminal convictions within the applicable statutory waiting period</span>
-              </label>
-              <label class="check-item" id="checkSentenceRow" style="display: none;">
-                <input type="checkbox" id="calcCheckSentence" checked>
-                <span id="checkSentenceText">At least 3 years have passed since completing all terms of sentence
-                  (probation, parole, or DOC discharge)</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="assessment-result">
-          <div>
-            <div class="result-status-box">
-              <span id="resBadge" class="status-badge status-badge-success">✓ Statutorily Eligible (Mandatory
-                Grant)</span>
-              <div id="resHeadline" class="result-title">Court Required By Law To Grant</div>
-            </div>
-
-            <!-- Visual Progress Meter -->
-            <div class="progress-meter-container">
-              <div class="progress-meter-header">
-                <span>Statutory Waiting Progress</span>
-                <span id="resProgressText" style="color: var(--text-primary); font-weight: 700;">100% Complete</span>
-              </div>
-              <div class="progress-meter-track">
-                <div id="resProgressBar" class="progress-meter-fill" style="width: 100%;"></div>
-              </div>
-            </div>
-
-            <div class="result-table">
-              <div class="result-row">
-                <span class="result-label">Statutory Basis:</span>
-                <span id="resStatute" class="result-val">IC § 35-38-9-2</span>
-              </div>
-              <div class="result-row">
-                <span class="result-label">Statutory Waiting Period:</span>
-                <span id="resWaiting" class="result-val">5 Years</span>
-              </div>
-              <div class="result-row">
-                <span class="result-label">Time Elapsed:</span>
-                <span id="resElapsed" class="result-val">6.0 Years elapsed</span>
-              </div>
-              <div class="result-row">
-                <span class="result-label">Judicial Standard:</span>
-                <span id="resStandard" class="result-val">Mandatory (Court Shall Grant)</span>
-              </div>
-            </div>
-
-            <div id="resExplanation" class="result-advisory">
-              Under <b>IC § 35-38-9-2</b>, if you meet all statutory conditions, the Indiana court <b>SHALL</b> grant
-              the expungement. The judge has no discretion to deny your petition.
-            </div>
-          </div>
-
-          <div class="result-cta">
-            <a href="#instructions" class="btn btn-primary" style="width: 100%;">
-              Prepare Your Court Petition Packet
-            </a>
-          </div>
-        </div>
+        </details>
       </div>
     </div>
   </section>
 
-  <!-- Section 2: The Lifetime Limit (The One-Shot Rule) -->
+  <!-- Section 3: The Lifetime Limit (The One-Shot Rule) -->
   <section class="section section-alt" id="oneshot">
     <span id="warning" class="anchor-target"></span>
     <div class="container">
@@ -473,7 +648,7 @@
     </div>
   </section>
 
-  <!-- Section 3: Document Library (10 Pleadings) -->
+  <!-- Section 4: Document Library (10 Pleadings) -->
   <section class="section" id="documents">
     <span id="pleadings" class="anchor-target"></span>
     <div class="container">
@@ -484,387 +659,161 @@
           Indiana courts require specific formatting. This generates every required filing formatted to Indiana Trial
           Rule 10 standards as a single PDF.
         </p>
-        <span class="doc-interactive-hint">💡 Click any document for details on its purpose and filing rules</span>
       </div>
 
-      <div class="doc-list-card">
-        <div class="doc-list-header">
-          <span>Form #</span>
-          <span>Pleading Title &amp; Statutory Function</span>
-          <span style="text-align: right;">Authority &amp; Recipient</span>
-        </div>
+      <details id="pleadings-details" class="pleadings-disclosure">
+        <summary class="pleadings-summary">
+          <div class="pleadings-summary-content">
+            <h3 class="pleadings-summary-title">View All 10 Court-Ready Pleadings</h3>
+            <span class="pleadings-summary-badge">Indiana Trial Rule 10</span>
+          </div>
+          <svg class="disclosure-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </summary>
 
-        <div class="doc-list-item" data-doc-key="doc-00-a">
-          <span class="doc-list-badge">DOC 00-A</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Master Combined Petition Bundle</h3>
-            <p class="doc-list-desc">Complete multi-pleading PDF packet containing all required court filings with
-              official per-document pagination, assembled for e-filing or clerk window filing.</p>
+        <div class="doc-list-card">
+          <div class="doc-list-header">
+            <span>Form #</span>
+            <span>Pleading Title &amp; Statutory Function</span>
+            <span style="text-align: right;">Authority &amp; Recipient</span>
           </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">Master Packet</span>
-            <span class="doc-tag-dest">E-File Indiana</span>
-          </div>
-        </div>
 
-        <div class="doc-list-item" data-doc-key="doc-00-b">
-          <span class="doc-list-badge">DOC 00-B</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Pro Se Instruction &amp; Warning Guide</h3>
-            <p class="doc-list-desc">Plain-English 6-step walkthrough for self-represented petitioners with statutory
-              one-shot alerts.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">Filing Guide</span>
-            <span class="doc-tag-dest">Petitioner Copy</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-01">
-          <span class="doc-list-badge">DOC 01</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Appearance Form (Self-Represented)</h3>
-            <p class="doc-list-desc">Mandatory formal appearance as a self-represented pro se person pursuant to Indiana
-              Trial Rule 3.1.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">Trial Rule 3.1</span>
-            <span class="doc-tag-dest">County Clerk</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-02">
-          <span class="doc-list-badge">DOC 02</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Notice of Exclusion of Confidential Information</h3>
-            <p class="doc-list-desc">Formal court notice under Access to Court Records (ACR) Rule 5 shielding SSN and
-              DOB from public view.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">ACR Rule 5</span>
-            <span class="doc-tag-dest">Public File</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-03">
-          <span class="doc-list-badge">DOC 03</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Confidential Information Sheet</h3>
-            <p class="doc-list-desc">Official ACR Green Paper containing Social Security Number, date of birth, driver's
-              license, and prior address history filed under seal.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">Confidential</span>
-            <span class="doc-tag-dest">Under Seal</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-04">
-          <span class="doc-list-badge">DOC 04</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Verified Petition for Expungement</h3>
-            <p class="doc-list-desc">The core court petition itemizing every cause number, statutory tier, and
-              consolidation affirmation signed under penalty of perjury.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">IC § 35-38-9</span>
-            <span class="doc-tag-dest">Trial Court</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-05">
-          <span class="doc-list-badge">DOC 05</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Notice of Filing to Prosecuting Attorney</h3>
-            <p class="doc-list-desc">Statutory notice formally served on the County Prosecutor providing 30 days to
-              review the petition under IC § 35-38-9-9.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">30-Day Notice</span>
-            <span class="doc-tag-dest">Prosecutor</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-06">
-          <span class="doc-list-badge">DOC 06</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Certificate of Service</h3>
-            <p class="doc-list-desc">Sworn proof of formal service on the Prosecutor under Indiana Trial Rule 5 via
-              Certified Mail or Electronic Service.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">Trial Rule 5</span>
-            <span class="doc-tag-dest">Proof of Service</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-07">
-          <span class="doc-list-badge">DOC 07</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Proposed Order Granting Expungement</h3>
-            <p class="doc-list-desc">Court-ready proposed order with statutory sealing directives to ISP, BMV, and Court
-              Technology for the Judge's signature.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">Proposed Order</span>
-            <span class="doc-tag-dest">Presiding Judge</span>
-          </div>
-        </div>
-
-        <div class="doc-list-item" data-doc-key="doc-08">
-          <span class="doc-list-badge">DOC 08</span>
-          <div class="doc-list-main">
-            <h3 class="doc-list-title">Fee Waiver Petition &amp; Proposed Order</h3>
-            <p class="doc-list-desc">Indigent petition under IC § 33-37-3-2 and proposed order requesting that the court
-              waive the standard $157 civil filing fee.</p>
-          </div>
-          <div class="doc-list-meta">
-            <span class="doc-tag-rule">IC § 33-37-3-2</span>
-            <span class="doc-tag-dest">Fee Waiver</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 4: Pro Se Filing Flow -->
-  <section class="section section-alt" id="workflow">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-kicker">How It Works</span>
-        <h2 class="section-title">Four Steps to Your Expungement Petition</h2>
-        <p class="section-lead">
-          Four steps, done entirely on your computer. No accounts, no uploads, no middlemen.
-        </p>
-      </div>
-
-      <div class="workflow-grid">
-        <div class="workflow-card">
-          <img src="assets/step_1_search.jpg" alt="Search MyCase" class="workflow-image" loading="lazy">
-          <div class="workflow-icon">1</div>
-          <h3>Search Your Records</h3>
-          <p>Look up your public court records on Indiana's <code>mycase.in.gov</code> portal. Ensure you search across
-            all counties and aliases.</p>
-        </div>
-
-        <div class="workflow-card">
-          <img src="assets/step_2_export.jpg" alt="Export Data" class="workflow-image" loading="lazy">
-          <div class="workflow-icon">2</div>
-          <h3>Export with One Click</h3>
-          <p>Use the 1-click Bookmarklet to securely read your case numbers, charges, and deep CCS docket details
-            directly from the page.</p>
-        </div>
-
-        <div class="workflow-card">
-          <img src="assets/step_3_generate.jpg" alt="Generate Document" class="workflow-image" loading="lazy">
-          <div class="workflow-icon">3</div>
-          <h3>Generate Your Packet</h3>
-          <p>Upload the exported file to the Web App. All 10 court pleadings are formatted and compiled into a single
-            PDF right on your computer.</p>
-        </div>
-
-        <div class="workflow-card">
-          <img src="assets/step_4_sign.jpg" alt="Sign and File" class="workflow-image" loading="lazy">
-          <div class="workflow-icon">4</div>
-          <h3>Sign & File</h3>
-          <p>Download your court packet, sign under penalty of perjury, and deliver to the County Clerk in person
-            or through Indiana's E-File system.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 5: Setup & User Guide -->
-  <section class="section" id="instructions">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-kicker">3 Ways to Get Started</span>
-        <h2 class="section-title">How to Prepare Your Expungement Petition</h2>
-        <p class="section-lead">
-          Choose the method that fits your situation. All three run entirely in your browser.
-        </p>
-      </div>
-
-      <div class="guide-container">
-        <div class="guide-tabs">
-          <button class="guide-tab-btn active" data-tab="tab-bookmarklet">
-            <span>⚡ 1. 1-Click Bookmarklet (Recommended · Any Browser)</span>
-          </button>
-          <button class="guide-tab-btn" data-tab="tab-chrome">
-            <span>🧩 2. Chrome Extension (Sidepanel)</span>
-          </button>
-          <button class="guide-tab-btn" data-tab="tab-offline">
-            <span>📁 3. Saved HTML / JSON Upload</span>
-          </button>
-        </div>
-
-        <!-- Tab 1: Bookmarklet (Recommended) -->
-        <div class="guide-pane active" id="tab-bookmarklet">
-          <div class="bookmarklet-hero-card">
-            <div class="bookmarklet-hero-header">
-              <div>
-                <h3
-                  style="font-family: var(--font-serif); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 0.3rem;">
-                  Instant In-Browser Record Exporter
-                </h3>
-                <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
-                  Works in <b>any browser</b> (Chrome, Edge, Safari, Firefox, Opera, Brave). No extension installation
-                  needed.
-                </p>
-              </div>
-              <span class="bookmarklet-tag-recommended">★ Recommended &bull; Zero Install</span>
+          <div class="doc-list-item" data-doc-key="doc-00-a">
+            <span class="doc-list-badge">DOC 00-A</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Master Combined Petition Bundle</h3>
+              <p class="doc-list-desc">Complete multi-pleading PDF packet containing all required court filings with
+                official per-document pagination, assembled for e-filing or clerk window filing.</p>
             </div>
-
-            <!-- Draggable Bookmarklet Button Area -->
-            <div class="bookmarklet-drag-area">
-              <span class="bookmarklet-drag-hint">👇 Drag this button directly onto your browser's Bookmarks
-                bar:</span>
-              <a class="bookmarklet-pill-btn"
-                href="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();"
-                draggable="true" title="Drag this button to your bookmarks bar">
-                <span>⚖️ Export MyCase Data ⚖️</span>
-              </a>
-              <div class="bookmarklet-btn-group">
-                <a href="app/app.html" class="btn btn-primary" style="padding: 0.55rem 1.1rem; font-size: 0.82rem;">
-                  Open Web App ↗
-                </a>
-              </div>
-              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">
-                <em>(Tip: If your bookmarks bar is hidden, press <kbd>Ctrl+Shift+B</kbd> on Windows or
-                  <kbd>Cmd+Shift+B</kbd> on Mac)</em>
-              </p>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">Master Packet</span>
+              <span class="doc-tag-dest">E-File Indiana</span>
             </div>
+          </div>
 
-            <!-- 4-Step Interactive Visual Guide -->
-            <div>
-              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
-                Step-by-Step Walkthrough
-              </h4>
-              <div class="interactive-demo-grid">
-                <div class="interactive-demo-step">
-                  <span class="interactive-step-badge">1</span>
-                  <div class="interactive-step-title">Drag Bookmarklet</div>
-                  <div class="interactive-step-desc">
-                    Drag the <b>Export MyCase Data</b> button above onto your browser bookmarks toolbar.
-                  </div>
-                </div>
+          <div class="doc-list-item" data-doc-key="doc-00-b">
+            <span class="doc-list-badge">DOC 00-B</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Pro Se Instruction &amp; Warning Guide</h3>
+              <p class="doc-list-desc">Plain-English 6-step walkthrough for self-represented petitioners with statutory
+                one-shot alerts.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">Filing Guide</span>
+              <span class="doc-tag-dest">Petitioner Copy</span>
+            </div>
+          </div>
 
-                <div class="interactive-demo-step">
-                  <span class="interactive-step-badge">2</span>
-                  <div class="interactive-step-title">Search on MyCase</div>
-                  <div class="interactive-step-desc">
-                    Go to <a href="https://public.courts.in.gov/mycase" target="_blank"
-                      rel="noopener noreferrer">public.courts.in.gov/mycase</a> and search your full name and prior
-                    aliases across Indiana counties.
-                  </div>
-                </div>
+          <div class="doc-list-item" data-doc-key="doc-01">
+            <span class="doc-list-badge">DOC 01</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Appearance Form (Self-Represented)</h3>
+              <p class="doc-list-desc">Mandatory formal appearance as a self-represented pro se person pursuant to Indiana
+                Trial Rule 3.1.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">Trial Rule 3.1</span>
+              <span class="doc-tag-dest">County Clerk</span>
+            </div>
+          </div>
 
-                <div class="interactive-demo-step">
-                  <span class="interactive-step-badge">3</span>
-                  <div class="interactive-step-title">1-Click Export</div>
-                  <div class="interactive-step-desc">
-                    Click the bookmarklet from your bar. A secure overlay will scan cases, fetch deep CCS docket
-                    details, and download <code>mycase-expungement-data.json</code>.
-                  </div>
-                </div>
+          <div class="doc-list-item" data-doc-key="doc-02">
+            <span class="doc-list-badge">DOC 02</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Notice of Exclusion of Confidential Information</h3>
+              <p class="doc-list-desc">Formal court notice under Access to Court Records (ACR) Rule 5 shielding SSN and
+                DOB from public view.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">ACR Rule 5</span>
+              <span class="doc-tag-dest">Public File</span>
+            </div>
+          </div>
 
-                <div class="interactive-demo-step">
-                  <span class="interactive-step-badge">4</span>
-                  <div class="interactive-step-title">Generate Packet</div>
-                  <div class="interactive-step-desc">
-                    Open the <a href="app/app.html">Assistant Web App</a>, upload the JSON file, and instantly download
-                    all 10 court filings.
-                  </div>
-                </div>
-              </div>
+          <div class="doc-list-item" data-doc-key="doc-03">
+            <span class="doc-list-badge">DOC 03</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Confidential Information Sheet</h3>
+              <p class="doc-list-desc">Official ACR Green Paper containing Social Security Number, date of birth, driver's
+                license, and prior address history filed under seal.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">Confidential</span>
+              <span class="doc-tag-dest">Under Seal</span>
+            </div>
+          </div>
+
+          <div class="doc-list-item" data-doc-key="doc-04">
+            <span class="doc-list-badge">DOC 04</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Verified Petition for Expungement</h3>
+              <p class="doc-list-desc">The core court petition itemizing every cause number, statutory tier, and
+                consolidation affirmation signed under penalty of perjury.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">IC § 35-38-9</span>
+              <span class="doc-tag-dest">Trial Court</span>
+            </div>
+          </div>
+
+          <div class="doc-list-item" data-doc-key="doc-05">
+            <span class="doc-list-badge">DOC 05</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Notice of Filing to Prosecuting Attorney</h3>
+              <p class="doc-list-desc">Statutory notice formally served on the County Prosecutor providing 30 days to
+                review the petition under IC § 35-38-9-9.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">30-Day Notice</span>
+              <span class="doc-tag-dest">Prosecutor</span>
+            </div>
+          </div>
+
+          <div class="doc-list-item" data-doc-key="doc-06">
+            <span class="doc-list-badge">DOC 06</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Certificate of Service</h3>
+              <p class="doc-list-desc">Sworn proof certifying service on the Prosecuting Attorney, Indiana State Police,
+                and County Sheriff.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">Trial Rule 5</span>
+              <span class="doc-tag-dest">Court Record</span>
+            </div>
+          </div>
+
+          <div class="doc-list-item" data-doc-key="doc-07">
+            <span class="doc-list-badge">DOC 07</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Proposed Order Granting Expungement</h3>
+              <p class="doc-list-desc">Draft judicial order pre-filled with statutory findings directing BMV, ISP, and law
+                enforcement to seal records.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">Statutory Order</span>
+              <span class="doc-tag-dest">For Judge's Signature</span>
+            </div>
+          </div>
+
+          <div class="doc-list-item" data-doc-key="doc-08">
+            <span class="doc-list-badge">DOC 08</span>
+            <div class="doc-list-main">
+              <h3 class="doc-list-title">Fee Waiver Petition &amp; Proposed Order</h3>
+              <p class="doc-list-desc">Indigent petition under IC § 33-37-3-2 and proposed order requesting that the court
+                waive the standard $157 civil filing fee.</p>
+            </div>
+            <div class="doc-list-meta">
+              <span class="doc-tag-rule">IC § 33-37-3-2</span>
+              <span class="doc-tag-dest">Fee Waiver</span>
             </div>
           </div>
         </div>
-
-        <!-- Tab 2: Chrome Extension -->
-        <div class="guide-pane" id="tab-chrome">
-          <ul class="guide-steps">
-            <li class="guide-step">
-              <span class="guide-step-num">1</span>
-              <div class="guide-step-body">
-                <h4>Download or Clone the Repository</h4>
-                <p>Download the project ZIP from GitHub or clone the repository to your computer:</p>
-                <div class="snippet-box">
-                  <button class="btn-snippet-copy">Copy</button>
-                  <pre>git clone https://github.com/CambrianMinds/indiana-expungement-assistant.git</pre>
-                </div>
-              </div>
-            </li>
-
-            <li class="guide-step">
-              <span class="guide-step-num">2</span>
-              <div class="guide-step-body">
-                <h4>Open Chrome Extension Management</h4>
-                <p>In Google Chrome, navigate to <code>chrome://extensions</code> in the address bar and switch on
-                  <b>Developer mode</b> in the upper-right corner.
-                </p>
-              </div>
-            </li>
-
-            <li class="guide-step">
-              <span class="guide-step-num">3</span>
-              <div class="guide-step-body">
-                <h4>Load Unpacked Extension</h4>
-                <p>Click the <b>Load unpacked</b> button and select the <code>extension/</code> folder inside the
-                  downloaded project. The scales icon will appear in your Chrome toolbar.</p>
-              </div>
-            </li>
-
-            <li class="guide-step">
-              <span class="guide-step-num">4</span>
-              <div class="guide-step-body">
-                <h4>Scan Side-by-Side &amp; Generate Filings</h4>
-                <p>Navigate to <code>public.courts.in.gov/mycase</code>, click the extension icon to open the side
-                  panel, and click <b>Scan Page &amp; Check Eligibility</b> to analyze your cases and generate your
-                  court packet directly.</p>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Tab 3: Offline HTML / JSON Upload -->
-        <div class="guide-pane" id="tab-offline">
-          <ul class="guide-steps">
-            <li class="guide-step">
-              <span class="guide-step-num">1</span>
-              <div class="guide-step-body">
-                <h4>Save MyCase Search Page (HTML)</h4>
-                <p>On <code>public.courts.in.gov/mycase</code>, after searching your name, right-click anywhere on the
-                  page and select <b>"Save Page As..."</b> (Save as <b>Webpage, HTML Only</b> or
-                  <code>.htm</code>/<code>.html</code>).
-                </p>
-              </div>
-            </li>
-
-            <li class="guide-step">
-              <span class="guide-step-num">2</span>
-              <div class="guide-step-body">
-                <h4>Launch the Web App &amp; Upload</h4>
-                <p>Open the <a href="app/app.html">Expungement Assistant Web App</a>, drag &amp; drop your saved
-                  HTML/JSON file(s) on the <b>Import Records</b> tab, or use the file chooser.</p>
-              </div>
-            </li>
-
-            <li class="guide-step">
-              <span class="guide-step-num">3</span>
-              <div class="guide-step-body">
-                <h4>Confirm Parity &amp; Compile Documents</h4>
-                <p>The client-side engine will extract all cause numbers, assess waiting periods under IC § 35-38-9, and
-                  compile your 10 court filings right in your browser with 100% offline privacy.</p>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
+      </details>
     </div>
   </section>
 
-  <!-- Section 6: Frequently Asked Questions (FAQ) -->
+  <!-- Section 5: Frequently Asked Questions (FAQ) -->
   <section class="section section-alt" id="faq">
     <div class="container">
       <div class="section-header">
@@ -1069,26 +1018,22 @@
     </div>
   </section>
 
-  <!-- Section 7: Public Interest Mission & Creator Letter -->
+  <!-- Section 6: Public Interest Mission & Creator Letter -->
   <section class="section" id="mission">
     <div class="container">
       <div class="letter-panel">
-        <div class="letter-bg-media" aria-hidden="true">
-          <img src="assets/hero-courthouse.jpg" alt="" class="letter-bg-img">
-          <div class="letter-bg-overlay"></div>
-        </div>
-
-        <div class="letter-scenic-col">
-          <h2 class="scenic-title">The Law Belongs to You</h2>
-          <p class="scenic-subtitle">Indiana's Second Chance Law exists. The $3,000 gate in front of it doesn't have to.
-          </p>
-        </div>
-
         <div class="letter-glass-card">
           <div class="letter-header">
-            <div class="letter-crest">⚖️</div>
+            <div class="letter-crest" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1" />
+                <path d="M18 8h4a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4" />
+                <circle cx="8" cy="12" r="2" />
+              </svg>
+            </div>
             <div>
-              <h3>The Public Interest Mission</h3>
+              <h2 class="scenic-title" style="margin-bottom: 0.25rem;">The Law Belongs to You</h2>
+              <p class="scenic-subtitle">Indiana's Second Chance Law exists. The $3,000 gate in front of it doesn't have to.</p>
             </div>
           </div>
 
@@ -1191,6 +1136,29 @@
       </div>
     </div>
   </footer>
+
+  <!-- Persistent Statutory Viewport Banner (IC § 35-38-9-9) -->
+  <aside id="statutoryBanner" class="statutory-banner" role="complementary" aria-label="Statutory Warning">
+    <div class="container statutory-banner-inner">
+      <div class="statutory-banner-content">
+        <span class="statutory-banner-tag">Statutory Notice</span>
+        <p class="statutory-banner-text">
+          Under IC § 35-38-9-9, Indiana permits criminal conviction expungement <strong>only once per lifetime</strong>. Any conviction omitted from your filing is permanently barred.
+        </p>
+      </div>
+      <button type="button" id="btnToggleStatutoryBanner" class="statutory-banner-toggle" aria-label="Minimize statutory notice">
+        <span>Dismiss</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <button type="button" id="statutoryBannerPill" class="statutory-banner-pill" style="display:none;" aria-label="Reopen statutory notice">
+    <span>One-Shot Rule Notice</span>
+  </button>
 
   <!-- Document Details Modal Dialog -->
   <div id="docModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalDocTitle">

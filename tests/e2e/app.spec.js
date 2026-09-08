@@ -22,6 +22,14 @@ test.describe('Indiana Expungement Assistant E2E', () => {
     // Wait for JS modules to load and attach event listeners
     await page.waitForLoadState('networkidle');
 
+    // Accept the pro se disclaimer gate if visible
+    const gateCheck = page.locator('#gateAckCheck');
+    if (await gateCheck.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await gateCheck.check();
+      await page.click('#btnAcceptGate');
+      await expect(page.locator('#disclaimerGate')).toBeHidden();
+    }
+
     // Click the Generate tab
     await page.click('button[data-tab="generate"]');
     await expect(page.locator('#tab-generate')).toHaveClass(/active/);

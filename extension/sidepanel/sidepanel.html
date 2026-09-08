@@ -56,7 +56,7 @@
           <path d="m19.07 4.93-1.41 1.41" />
         </svg>
         <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3a6 6 0 0 0 9 9 9 0 1 1-9-9Z" />
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1 -9 -9Z" />
         </svg>
       </button>
     </div>
@@ -544,7 +544,11 @@
       <!-- Mandatory Pro Se Acknowledgments -->
       <div class="acknowledgment-card">
         <div class="ack-card-header">
-          <span class="ack-shield-icon">🛡️</span>
+          <span class="ack-shield-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </span>
           <div>
             <h5>Mandatory Legal Acknowledgments</h5>
             <p>You must check each box to confirm your understanding before generating court forms:</p>
@@ -724,35 +728,66 @@
     </div>
   </div>
 
-  <!-- ═══ Modal: Final One-Shot Confirmation ═══ -->
+  <!-- ═══ Modal: Statutory Pre-Flight Audit & One-Shot Confirmation ═══ -->
   <div class="modal-overlay" id="confirmModal" style="display:none" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle">
-    <div class="modal-dialog">
+    <div class="modal-dialog audit-dialog">
       <div class="modal-header">
-        <div class="modal-icon-alert">🛑</div>
-        <h3 id="confirmModalTitle">Final Confirmation: Lifetime One-Shot Rule</h3>
+        <div class="modal-icon-alert modal-icon-shield">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="confirmModalTitle">Statutory Pre-Flight Audit (IC § 35-38-9)</h3>
+          <span class="modal-header-sub">Verify petition filings, filing deadlines, and court jurisdiction</span>
+        </div>
       </div>
       <div class="modal-body">
-        <p class="modal-lead">
-          <b>Are you 100% sure that all of your Indiana criminal convictions are included?</b>
+        <div class="audit-summary-bar">
+          <div class="audit-badge-group">
+            <span class="audit-label">Filing Court:</span>
+            <span class="audit-court-val" id="confirmCourtCounty">Indiana Circuit / Superior Court</span>
+          </div>
+          <div class="audit-badge-group">
+            <span class="audit-label">Cases Included:</span>
+            <span class="audit-count-badge" id="confirmCaseCount">0</span>
+          </div>
+        </div>
+
+        <p class="modal-subtext" style="margin-bottom:6px">
+          The following case(s) will be consolidated into this petition packet. Review carefully:
         </p>
-        <p class="modal-subtext" style="margin-bottom:8px">
-          The following <b id="confirmCaseCount">0</b> case(s) will be included in your petition. Review carefully — a missed conviction can never be expunged later.
-        </p>
-        <div class="modal-callout-info" id="confirmCaseList" style="max-height:140px">
+        <div class="modal-callout-info" id="confirmCaseList" style="max-height:140px; overflow-y:auto;">
           <!-- Dynamically populated with case numbers before modal is shown -->
         </div>
-        <div class="modal-callout-danger">
-          <b>INDIANA CODE § 35-38-9-9(i) STRICT LIFETIME LIMIT:</b>
-          <br>You can petition to expunge convictions <u>ONLY ONCE IN YOUR LIFE</u>. Any conviction not included now can
-          <u>NEVER BE EXPUNGED FOR THE REST OF YOUR LIFE</u>.
+
+        <!-- Dynamic Multi-County / Prior Filing Notice -->
+        <div class="modal-callout-warning" id="confirmMultiCountyNotice" style="display:none; margin-top:10px;">
+          <div class="notice-title"><strong>Consolidation Window Notice (IC § 35-38-9-9(d))</strong></div>
+          <p id="confirmMultiCountyText" style="margin:4px 0 0; font-size:0.84rem; line-height:1.45;"></p>
         </div>
+
+        <!-- Dynamic Outstanding Fees / Restitution Notice -->
+        <div class="modal-callout-warning" id="confirmFeesNotice" style="display:none; margin-top:10px;">
+          <div class="notice-title"><strong>Outstanding Court Balances / Restitution Notice</strong></div>
+          <p id="confirmFeesText" style="margin:4px 0 0; font-size:0.84rem; line-height:1.45;"></p>
+        </div>
+
+        <div class="modal-callout-danger" style="margin-top:10px;">
+          <strong>Indiana Code § 35-38-9-9(i) Lifetime Limit:</strong>
+          <br>You can petition to expunge criminal convictions <u>only once in your lifetime</u>. Any conviction omitted now can
+          <u>never be expunged later</u>.
+        </div>
+
         <p class="modal-checklist-intro">Before generating, confirm you have searched MyCase for:</p>
         <ul class="modal-list">
           <li>✓ All previous legal names, maiden names, and aliases</li>
           <li>✓ All 92 Indiana counties (not just the county you currently live in)</li>
           <li>✓ Both misdemeanors and felony charges</li>
           <li>✓ Any open or pending warrants/cases</li>
-          <li>✓ <b>Recommendation Acknowledged:</b> I understand it is strongly recommended to obtain an official Indiana State Police (ISP) Criminal History Background Check to ensure no cases are missed before filing</li>
+          <li>✓ <b>Recommendation Acknowledged:</b> Strongly recommended to obtain an official Indiana State Police (ISP) Criminal History Background Check to ensure no cases are missed before filing</li>
         </ul>
         <p class="modal-subtext">
           <b>Disclaimer:</b> The creator of this software is an independent individual advocating for accessibility, NOT
@@ -760,8 +795,8 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="btnModalCancel">Go Back &amp; Verify</button>
-        <button class="btn btn-danger" id="btnModalConfirm">I Confirm All Charges Are Included</button>
+        <button type="button" class="btn btn-secondary" id="btnModalCancel">Go Back &amp; Verify</button>
+        <button type="button" class="btn btn-primary btn-generate-confirm" id="btnModalConfirm">Confirm &amp; Generate Packet</button>
       </div>
     </div>
   </div>
@@ -770,7 +805,12 @@
   <div class="modal-overlay" id="manualEntryModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="manualEntryModalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-icon-alert">✍️</div>
+        <div class="modal-icon-alert">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
         <h3 id="manualEntryModalTitle">Add Case Manually</h3>
       </div>
       <div class="modal-body">
@@ -811,7 +851,11 @@
   <div class="modal-overlay" id="legalNoticeModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="legalNoticeModalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-icon-alert">⚖️</div>
+        <div class="modal-icon-alert">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
         <h3 id="legalNoticeModalTitle">Legal Notice, Mission &amp; Disclaimers</h3>
       </div>
       <div class="modal-body modal-scrollable">

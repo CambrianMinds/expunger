@@ -195,17 +195,22 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
 
         let tr6Note = '';
         if (daysRemaining <= 14) {
-          tr6Note = `\n\n⚖️ Indiana Trial Rule 6(A) Computation Note:\nIf day 365 (${deadlineStr}) falls on a Saturday, Sunday, legal holiday, or day the clerk's office is closed, the statutory filing deadline extends to the next business day.`;
+          tr6Note = `<br><br><em>Indiana Trial Rule 6(A) Computation Note:</em> If day 365 (${deadlineStr}) falls on a Saturday, Sunday, legal holiday, or day the clerk's office is closed, the statutory filing deadline extends to the next business day.`;
         }
 
-        const warningMsg = `WARNING: Under IC § 35-38-9-9(d), you have ${daysRemaining} day(s) remaining (until ${deadlineStr}) to complete filing with the Court Clerk.\n\n` +
-          `CRITICAL FILE-STAMP REQUIREMENT: The statutory 365-day clock only stops on the date the Court Clerk file-stamps your petition—NOT the date you download this PDF packet. If filing by certified mail or waiting to pay court fees, ensure physical delivery before the deadline.${tr6Note}\n\n` +
-          `Do you wish to proceed?`;
-
-        if (!confirm(warningMsg)) {
-          return;
+        const multiCountyEl = $('#confirmMultiCountyNotice');
+        const multiCountyText = $('#confirmMultiCountyText');
+        if (multiCountyEl && multiCountyText) {
+          multiCountyText.innerHTML = `Under IC § 35-38-9-9(d), you have <strong>${daysRemaining} day(s) remaining</strong> (until <strong>${deadlineStr}</strong>) to complete filing with the Court Clerk following your prior county filing.<br><br><strong>Critical File-Stamp Requirement:</strong> The statutory 365-day clock only stops on the date the Court Clerk file-stamps your petition—NOT the date you download this PDF packet.${tr6Note}`;
+          multiCountyEl.style.display = 'block';
         }
+      } else {
+        const multiCountyEl = $('#confirmMultiCountyNotice');
+        if (multiCountyEl) multiCountyEl.style.display = 'none';
       }
+    } else {
+      const multiCountyEl = $('#confirmMultiCountyNotice');
+      if (multiCountyEl) multiCountyEl.style.display = 'none';
     }
 
     // Audit for unpaid restitution or court balance due (IC § 35-38-9 requirement)
@@ -214,16 +219,16 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       return bal > 0;
     });
 
+    const feesEl = $('#confirmFeesNotice');
+    const feesText = $('#confirmFeesText');
     if (casesWithUnpaidFees.length > 0) {
       const totalUnpaid = casesWithUnpaidFees.reduce((sum, c) => sum + (c.financials?.balanceDue || c.ccs?.financials?.balanceDue || 0), 0);
-      const feeWarning = `⚠️ MANDATORY STATUTORY AUDIT WARNING:\n\n` +
-        `Our audit detected an outstanding court balance or unpaid restitution of $${totalUnpaid.toFixed(2)} on case(s): ` +
-        `${casesWithUnpaidFees.map(c => c.case_number).join(', ')}.\n\n` +
-        `Under Indiana Code § 35-38-9, a court cannot grant an expungement unless all fines, fees, and restitution are fully paid. In your petition, you must affirm under penalty of perjury that all court obligations are satisfied.\n\n` +
-        `Do you still wish to proceed with generating this packet?`;
-      if (!confirm(feeWarning)) {
-        return;
+      if (feesEl && feesText) {
+        feesText.innerHTML = `Our statutory audit detected an outstanding court balance or unpaid restitution of <strong>$${totalUnpaid.toFixed(2)}</strong> on case(s): <strong>${casesWithUnpaidFees.map(c => c.case_number).join(', ')}</strong>.<br><br>Under Indiana Code § 35-38-9, a court cannot grant an expungement unless all fines, fees, and restitution are fully paid. In your petition, you must affirm under penalties of perjury that all court obligations are satisfied.`;
+        feesEl.style.display = 'block';
       }
+    } else if (feesEl) {
+      feesEl.style.display = 'none';
     }
 
     const acksReady = $('#ackOneShot')?.checked &&
@@ -236,17 +241,27 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
       return;
     }
 
+    const courtEl = $('#confirmCourtCounty');
+    if (courtEl) {
+      const courtName = targetCountyCheck?.courtName || (targetCountyCheck?.countyName ? `${targetCountyCheck.countyName} County Court` : (AppState.petitionerProfile?.county ? `${AppState.petitionerProfile.county} County Court` : 'Indiana Circuit / Superior Court'));
+      courtEl.textContent = courtName;
+    }
+
     // Populate the case list in the confirm modal so the user sees exactly what will be filed
+    const casesToInclude = (targetCountyCheck ? targetCountyCheck.cases : AppState.currentCases).filter(c => c.eligibility?.eligible !== false);
     const caseListEl = $('#confirmCaseList');
     const caseCountEl = $('#confirmCaseCount');
-    if (caseListEl && caseCountEl && AppState.currentCases.length > 0) {
-      caseCountEl.textContent = AppState.currentCases.length;
-      caseListEl.innerHTML = AppState.currentCases.map(c => {
+    if (caseCountEl) {
+      caseCountEl.textContent = casesToInclude.length;
+    }
+    if (caseListEl && casesToInclude.length > 0) {
+      caseListEl.innerHTML = casesToInclude.map(c => {
         const num = c.case_number || 'UNKNOWN';
         const type = c.case_type || c.type || '';
+        const statute = c.eligibility?.statute || '';
         return `<div class="modal-case-item">
           <span class="modal-case-num">${num}</span>
-          <span class="modal-case-type">${type}</span>
+          <span class="modal-case-type">${type ? type + ' · ' : ''}${statute}</span>
         </div>`;
       }).join('');
     }

@@ -9,11 +9,11 @@ module.exports = defineConfig({
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3100',
   },
   webServer: {
-    command: 'npx serve -p 3000',
-    url: 'http://localhost:3000',
+    command: 'npx serve -p 3100 .',
+    url: 'http://localhost:3100',
     reuseExistingServer: !process.env.CI,
   },
   projects: [

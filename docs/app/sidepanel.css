@@ -2384,3 +2384,292 @@ select.is-invalid {
   color: var(--text-primary);
 }
 
+/* ── 22. Device Saving Guide Drawer ─────────────────────────────────────── */
+.device-guide-drawer {
+  background: var(--color-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+
+.device-guide-drawer[open] {
+  border-color: var(--color-blue-600);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.device-guide-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 1.25rem;
+  cursor: pointer;
+  background-color: var(--color-surface-subtle);
+  user-select: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  list-style: none;
+}
+
+.device-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.guide-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.guide-summary-left .summary-icon {
+  color: var(--color-blue-600);
+  flex-shrink: 0;
+}
+
+.guide-summary-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+}
+
+.device-guide-body {
+  padding: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.guide-intro {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 1.15rem;
+}
+
+.guide-intro a {
+  color: var(--color-blue-600);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 860px) {
+  .device-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.device-card {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.device-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.device-badge {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-navy-950);
+}
+
+[data-theme="dark"] .device-badge {
+  color: #93c5fd;
+}
+
+.device-browser {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.device-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.device-steps li {
+  margin-bottom: 0.45rem;
+}
+
+.device-steps li:last-child {
+  margin-bottom: 0;
+}
+
+.device-steps kbd {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 3px;
+  padding: 1px 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* ── 23. Pro Se Disclaimer Entry Gate ──────────────────────────────────── */
+.disclaimer-dialog {
+  max-width: 680px;
+}
+
+.modal-header-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+.modal-icon-shield {
+  color: var(--color-blue-600);
+  background: var(--color-surface-subtle);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gate-terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 1.15rem 0;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.gate-term-item {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+}
+
+.gate-term-item strong {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.gate-term-item p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.gate-ack-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-gold-500);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.gate-ack-checkbox-label input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ── 24. Statutory Pre-Flight Audit Modal ──────────────────────────────── */
+.audit-dialog {
+  max-width: 680px;
+}
+
+.audit-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.15rem;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.audit-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.86rem;
+}
+
+.audit-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.audit-court-val {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.audit-count-badge {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background-color: var(--color-navy-950);
+  color: #ffffff;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+}
+
+[data-theme="dark"] .audit-count-badge {
+  background-color: var(--color-blue-600);
+}
+
+.btn-generate-confirm {
+  background-color: var(--color-navy-950);
+  font-weight: 700;
+}
+
+.btn-generate-confirm:hover:not(:disabled) {
+  background-color: var(--color-blue-700);
+}
+
+[data-theme="dark"] .btn-generate-confirm {
+  background-color: var(--color-blue-600);
+}
+

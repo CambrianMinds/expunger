@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initCopyButtons();
   initMobileNav();
   initScrollEffects();
+  initHashExpansion();
+  initStatutoryBanner();
 });
 
 /* ==========================================================================
@@ -528,30 +530,27 @@ function initMobileNav() {
   const navLinks = document.querySelector('.nav-links');
 
   if (toggle && navLinks) {
-    toggle.addEventListener('click', () => {
-      if (navLinks.style.display === 'flex') {
-        navLinks.style.display = 'none';
-      } else {
-        navLinks.style.display = 'flex';
-        navLinks.style.flexDirection = 'column';
-        navLinks.style.position = 'absolute';
-        navLinks.style.top = '100%';
-        navLinks.style.left = '0';
-        navLinks.style.right = '0';
-        navLinks.style.backgroundColor = 'var(--color-surface)';
-        navLinks.style.padding = '1.5rem';
-        navLinks.style.borderBottom = '1px solid var(--border-medium)';
-        navLinks.style.boxShadow = 'var(--shadow-lg)';
-        navLinks.style.gap = '1.25rem';
-      }
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = navLinks.classList.toggle('mobile-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      toggle.textContent = isOpen ? '✕ Close' : 'Menu';
     });
 
     navLinks.querySelectorAll('a').forEach(a => {
       a.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-          navLinks.style.display = 'none';
-        }
+        navLinks.classList.remove('mobile-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Menu';
       });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !toggle.contains(e.target)) {
+        navLinks.classList.remove('mobile-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Menu';
+      }
     });
   }
 }
@@ -591,3 +590,89 @@ function initScrollEffects() {
     });
   }
 }
+
+/* ==========================================================================
+   10. Hash Navigation & Details Auto-Expansion
+   ========================================================================== */
+function initHashExpansion() {
+  function expandTarget(targetId) {
+    if (!targetId) return;
+    const cleanId = targetId.replace(/^#/, '');
+    if (!cleanId) return;
+
+    const target = document.getElementById(cleanId);
+    if (!target) return;
+
+    if (target.tagName === 'DETAILS') {
+      target.open = true;
+    } else {
+      const parentDetails = target.closest('details');
+      if (parentDetails) {
+        parentDetails.open = true;
+      }
+      if (cleanId === 'how-it-works' || cleanId === 'workflow' || cleanId === 'instructions') {
+        const hiw = document.getElementById('how-it-works-card');
+        if (hiw) hiw.open = true;
+      } else if (cleanId === 'assessment' || cleanId === 'eligibility') {
+        const elg = document.getElementById('eligibility-card');
+        if (elg) elg.open = true;
+      } else if (cleanId === 'documents' || cleanId === 'pleadings') {
+        const pld = document.getElementById('pleadings-details');
+        if (pld) pld.open = true;
+      }
+    }
+
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  }
+
+  if (window.location.hash) {
+    expandTarget(window.location.hash);
+  }
+
+  window.addEventListener('hashchange', () => {
+    expandTarget(window.location.hash);
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', () => {
+      const href = link.getAttribute('href');
+      if (href && href.length > 1) {
+        expandTarget(href);
+      }
+    });
+  });
+}
+
+/* ==========================================================================
+   11. Persistent Statutory Notice Banner
+   ========================================================================== */
+function initStatutoryBanner() {
+  const banner = document.getElementById('statutoryBanner');
+  const toggleBtn = document.getElementById('btnToggleStatutoryBanner');
+  const pillBtn = document.getElementById('statutoryBannerPill');
+  if (!banner || !toggleBtn || !pillBtn) return;
+
+  const isDismissed = sessionStorage.getItem('statutory_banner_minimized') === 'true';
+  if (isDismissed) {
+    banner.classList.add('minimized');
+    pillBtn.style.display = 'block';
+    document.body.classList.add('statutory-banner-dismissed');
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    banner.classList.add('minimized');
+    pillBtn.style.display = 'block';
+    document.body.classList.add('statutory-banner-dismissed');
+    sessionStorage.setItem('statutory_banner_minimized', 'true');
+  });
+
+  pillBtn.addEventListener('click', () => {
+    banner.classList.remove('minimized');
+    pillBtn.style.display = 'none';
+    document.body.classList.remove('statutory-banner-dismissed');
+    sessionStorage.setItem('statutory_banner_minimized', 'false');
+  });
+}
+

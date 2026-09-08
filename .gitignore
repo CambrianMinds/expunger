@@ -32,9 +32,17 @@ Thumbs.db
 *.local
 node_modules/
 
+# Playwright test reports & artifacts
+playwright-report/
+test-results/
+.temp_*
+
 # Agent & Assistant local config
 .agents/
 .cline/
+.claude/
+.codex/
+.gemini/
 .instructions
 .instruction-files/
 skills/
