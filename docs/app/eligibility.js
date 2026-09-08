@@ -53,7 +53,7 @@ const IndianaExpungement = (() => {
     'XP': { level: 'expungement', class: null, severity: -10 },
     'TR': { level: 'civil', class: null, severity: -10 },
     'OV': { level: 'civil', class: null, severity: -10 },
-    'EV': { level: 'civil', class: null, severity: -10 }, // Added Evictions
+    'EV': { level: 'civil', class: null, severity: -10 }, // Evictions
   };
 
   // Offenses that are NOT eligible for expungement under any section (IC § 35-38-9)
@@ -101,15 +101,13 @@ const IndianaExpungement = (() => {
     if (!caseNumberOrType) return null;
     const str = caseNumberOrType.trim().toUpperCase();
 
-    // Try case number format: XXDXX-XXXX-CC-XXXXX
-    const caseNumMatch = str.match(/^\d+D\d+-\d{4}-([A-Z0-9]{2,3})-/);
+    // Catch Superior (D), Circuit (C), City (H), and Town (I) courts
+    const caseNumMatch = str.match(/^\d+[A-Z]\d+-\d{4}-([A-Z0-9]{2,3})-/);
     if (caseNumMatch) return caseNumMatch[1];
 
-    // Try case type label format: "XX - Description"
     const labelMatch = str.match(/^([A-Z0-9]{2,3})\s*[-–—]/);
     if (labelMatch) return labelMatch[1];
 
-    // Try bare code
     const bareMatch = str.match(/^([A-Z0-9]{2,3})$/);
     if (bareMatch) return bareMatch[1];
 
@@ -121,8 +119,8 @@ const IndianaExpungement = (() => {
    */
   function extractCourtCode(caseNumber) {
     if (!caseNumber) return null;
-    const match = caseNumber.trim().match(/^(\d+D\d+)/);
-    return match ? match[1] : null;
+    const match = caseNumber.trim().match(/^(\d+[A-Z]\d+)/i);
+    return match ? match[1].toUpperCase() : null;
   }
 
   /**

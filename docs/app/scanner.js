@@ -9,11 +9,6 @@ export function isMyCaseUrl(url) {
 }
 
 // ─── Scraper Parity Modal ──────────────────────────────────────────
-/**
- * Show the parity confirmation modal after a scan.
- * Displays the extracted cases and asks the user to verify they match
- * what's on screen before merging into the accumulated batch.
- */
 export function showParityModal(cases, searchContext, mergeMode) {
   if (cases && Array.isArray(cases)) {
     cases.forEach(c => {
@@ -981,37 +976,56 @@ export function renderResults() {
 
   const listEl = $('#caseList');
   if (!listEl) return;
-  listEl.innerHTML = '';
 
-  // NEW: Surface the Cross-County Lifetime Forfeiture Warning
-  const block = AppState.currentReport.crossCountyBlock;
-  if (block && !block.isSafe) {
-    const banner = document.createElement('div');
-    banner.className = 'financial-warning-box cross-county-warning';
-    banner.style = 'background:rgba(220,38,38,0.08); border-left:4px solid #dc2626; padding:12px; margin-bottom:16px; border-radius:4px;';
-    banner.innerHTML = `
-      <strong style="color:#dc2626; display:block; margin-bottom:6px;">⚠️ ${escapeHtml(block.reason)}</strong>
-      <p style="margin:0; color:var(--text-primary); font-size:0.9rem; line-height:1.4;">${escapeHtml(block.message)}</p>
-    `;
-    listEl.appendChild(banner);
-  }
+  // Render function scoped to handle dropdown filtering
+  const renderCaseList = (selectedCountyCode) => {
+    listEl.innerHTML = '';
 
-  const allCases = [];
-  for (const county of Object.values(AppState.currentReport.counties || {})) {
-    for (const c of county.cases) {
-      allCases.push(c);
+    // Surface the Cross-County Lifetime Forfeiture Warning
+    const block = AppState.currentReport.crossCountyBlock;
+    if (block && !block.isSafe) {
+      const banner = document.createElement('div');
+      banner.className = 'financial-warning-box cross-county-warning';
+      banner.style = 'background:rgba(220,38,38,0.08); border-left:4px solid #dc2626; padding:12px; margin-bottom:16px; border-radius:4px;';
+      banner.innerHTML = `
+        <strong style="color:#dc2626; display:block; margin-bottom:6px;">⚠️ ${escapeHtml(block.reason)}</strong>
+        <p style="margin:0; color:var(--text-primary); font-size:0.9rem; line-height:1.4;">${escapeHtml(block.message)}</p>
+      `;
+      listEl.appendChild(banner);
     }
-  }
 
-  allCases.sort((a, b) => {
-    const aElig = a.eligibility?.eligible ? 0 : 1;
-    const bElig = b.eligibility?.eligible ? 0 : 1;
-    if (aElig !== bElig) return aElig - bElig;
-    return (a.case_number || '').localeCompare(b.case_number || '');
-  });
+    let casesToRender = [];
+    if (selectedCountyCode && AppState.currentReport.counties[selectedCountyCode]) {
+      casesToRender = AppState.currentReport.counties[selectedCountyCode].cases;
+    } else {
+      // Fallback: render all if no selection
+      for (const county of Object.values(AppState.currentReport.counties || {})) {
+        casesToRender.push(...county.cases);
+      }
+    }
 
-  for (const c of allCases) {
-    listEl.appendChild(createCaseCard(c));
+    casesToRender.sort((a, b) => {
+      const aElig = a.eligibility?.eligible ? 0 : 1;
+      const bElig = b.eligibility?.eligible ? 0 : 1;
+      if (aElig !== bElig) return aElig - bElig;
+      return (a.case_number || '').localeCompare(b.case_number || '');
+    });
+
+    for (const c of casesToRender) {
+      listEl.appendChild(createCaseCard(c));
+    }
+  };
+
+  if (countySelectCard && countySelectDropdown && counties.length > 1) {
+    // Attach listener to instantly filter cases on change
+    countySelectDropdown.onchange = (e) => {
+      renderCaseList(e.target.value);
+    };
+    // Initial render based on the first dropdown item
+    renderCaseList(countySelectDropdown.value);
+  } else {
+    // Initial render for single-county or no dropdown scenarios
+    renderCaseList(null);
   }
 }
 
