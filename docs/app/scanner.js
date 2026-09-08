@@ -13,10 +13,6 @@ export function isMyCaseUrl(url) {
  * Show the parity confirmation modal after a scan.
  * Displays the extracted cases and asks the user to verify they match
  * what's on screen before merging into the accumulated batch.
- *
- * @param {Array}  cases        - Cases scraped from this scan
- * @param {string} searchContext - Human-readable label for this search (e.g. name/county)
- * @param {boolean} mergeMode   - Whether merge is enabled
  */
 export function showParityModal(cases, searchContext, mergeMode) {
   if (cases && Array.isArray(cases)) {
@@ -64,10 +60,6 @@ export function showParityModal(cases, searchContext, mergeMode) {
   if (modal) modal.style.display = 'flex';
 }
 
-/**
- * Called when the user clicks "Go Back & Retry" in the parity modal.
- * Closes the modal and lets the user re-run the scan.
- */
 $('#btnParityRetry')?.addEventListener('click', () => {
   const modal = $('#parityModal');
   if (modal) modal.style.display = 'none';
@@ -75,10 +67,6 @@ $('#btnParityRetry')?.addEventListener('click', () => {
   showToast('Re-run the scan when you\'re ready.', 'info', 3000);
 });
 
-/**
- * Called when the user confirms the cases match what they see on screen.
- * Merges the pending scan result into the accumulated case set.
- */
 $('#btnParityConfirm')?.addEventListener('click', () => {
   const modal = $('#parityModal');
   if (modal) modal.style.display = 'none';
@@ -90,7 +78,6 @@ $('#btnParityConfirm')?.addEventListener('click', () => {
   if (incomingCases.length === 0) return;
 
   if (mergeMode && AppState.currentCases.length > 0) {
-    // Multi-search merge & de-duplication
     const existingMap = new Map();
     AppState.currentCases.forEach(c => {
       const k = (c.case_number || '').trim().toUpperCase();
@@ -143,7 +130,6 @@ $('#btnParityConfirm')?.addEventListener('click', () => {
       5000
     );
   } else {
-    // Fresh scan (or merge disabled)
     AppState.currentCases = incomingCases;
     AppState.currentCases.forEach(c => {
       c.searchQueries = [searchContext];
@@ -180,14 +166,14 @@ export function persistScanResults() {
       report: AppState.currentReport,
       searchBatches: AppState.searchBatches
     });
-  } catch (_) { /* chrome.runtime not available (e.g. devtools reload) — ignore */ }
+  } catch (_) { /* ignore */ }
   try {
     localStorage.setItem('lastScanResults', JSON.stringify({
       cases: AppState.currentCases,
       report: AppState.currentReport,
       searchBatches: AppState.searchBatches
     }));
-  } catch (_) { /* localStorage unavailable in this context — ignore */ }
+  } catch (_) { /* ignore */ }
 }
 
 // ─── Multi-Search Batch & UI State ─────────────────────────────────
@@ -235,7 +221,6 @@ export function updateBatchPanelUI() {
   }
 }
 
-// Clear all accumulated scans
 $('#btnClearScans')?.addEventListener('click', () => {
   if (AppState.currentCases.length > 0 && !confirm('Clear all accumulated cases and searches to start fresh?')) {
     return;
@@ -259,7 +244,6 @@ $('#btnClearScans')?.addEventListener('click', () => {
   showToast('Accumulated cases cleared. You can start a fresh search.', 'info', 3500);
 });
 
-// Jump from Results back to Scan to add another name / county
 $('#btnScanAnotherPage')?.addEventListener('click', () => {
   switchTab('scan');
   showToast('💡 Upload another MyCase file or drag and drop to combine with existing records.', 'info', 5000);
@@ -285,19 +269,18 @@ $('#btnManualSave')?.addEventListener('click', () => {
     form.reportValidity();
     return;
   }
-  
+
   const caseNumber = $('#manualCaseNumber').value.trim().toUpperCase();
   const caseType = $('#manualCaseType').value.trim().toUpperCase();
   const filed = $('#manualDispositionDate').value;
   const title = $('#manualCaseTitle').value.trim();
   const charges = $('#manualCharges').value.trim();
 
-  // Validate basic format XXDXX-YYMM-CC-NNNNNN
   if (!caseNumber.includes('-')) {
     showToast('Case number must be in the format XXDXX-YYMM-CC-NNNNNN', 'error', 4000);
     return;
   }
-  
+
   const countyCode = caseNumber.substring(0, 2);
 
   const newCase = {
@@ -307,14 +290,14 @@ $('#btnManualSave')?.addEventListener('click', () => {
     title: title,
     charges: charges,
     court: countyCode ? `County ${countyCode}` : 'Unknown Court',
-    status: 'Decided', // Assumed for manual entries
+    status: 'Decided',
     searchContext: 'Manual Entry',
     searchQueries: ['Manual Entry'],
     isManualEntry: true
   };
 
   AppState.currentCases.push(newCase);
-  
+
   if (window.IndianaExpungement?.analyzeAll) {
     AppState.currentReport = window.IndianaExpungement.analyzeAll(AppState.currentCases);
   }
@@ -323,23 +306,20 @@ $('#btnManualSave')?.addEventListener('click', () => {
   updateBatchPanelUI();
   renderResults();
   updateChecklist();
-  
+
   $('#manualEntryModal').style.display = 'none';
   showToast(`Successfully added case ${caseNumber} manually.`, 'success', 4000);
 });
 
-// Auto-suggest aliases from search queries (IC § 35-38-9-8(b)(1))
 function checkAndSuggestAlias(query) {
   if (!query || query === 'MyCase Search' || query.length < 3) return;
   const aliasesInput = $('#aliases');
   const currentAliases = (aliasesInput?.value || AppState.petitionerProfile?.aliases || '').trim();
   const fullName = ($('#fullName')?.value || AppState.petitionerProfile?.fullName || '').trim().toLowerCase();
 
-  // Clean query text
   const cleanQuery = query.replace(/[^\w\s,'-]/g, '').trim();
   if (!cleanQuery) return;
 
-  // If query has comma, e.g. "Smith, Jane", convert to "Jane Smith"
   let naturalName = cleanQuery;
   if (cleanQuery.includes(',')) {
     const parts = cleanQuery.split(',').map(s => s.trim());
@@ -376,7 +356,6 @@ export async function checkPageStatus() {
       return false;
     }
 
-    // Try messaging the content script; reinject transparently if missing
     let response = null;
     try {
       response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
@@ -384,7 +363,7 @@ export async function checkPageStatus() {
       if (await ensureContentScript(tab.id)) {
         try {
           response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
-        } catch (_) { /* fall through */ }
+        } catch (_) { }
       }
     }
 
@@ -412,30 +391,24 @@ export async function checkPageStatus() {
   }
 }
 
-// ─── Helper: check content script is alive on the active MyCase tab ───
 export async function ensureContentScript(tabId) {
   try {
     await chrome.tabs.sendMessage(tabId, { action: 'getPageStatus' });
     return true;
   } catch (e) {
-    // Content script missing — try to reinject via scripting API
     try {
       await chrome.scripting.executeScript({
         target: { tabId },
         files: ['eligibility.js', 'content.js']
       });
-      // Poll until the content script's message listener is ready, or give up after ~3s
       const maxAttempts = 15;
       for (let i = 0; i < maxAttempts; i++) {
         await new Promise(r => setTimeout(r, 200));
         try {
           await chrome.tabs.sendMessage(tabId, { action: 'getPageStatus' });
-          return true; // Content script is ready and responding
-        } catch (_) {
-          // Not ready yet — loop will retry
-        }
+          return true;
+        } catch (_) { }
       }
-      console.warn(`ensureContentScript: content script did not respond after ${maxAttempts} attempts`);
       return false;
     } catch (_) {
       return false;
@@ -443,7 +416,7 @@ export async function ensureContentScript(tabId) {
   }
 }
 
-// ─── Scan Action (Supports Multi-Page Merge for Maiden/Aliases) ──────
+// ─── Scan Action ───────────────────────────────────────────────────
 const scanBtn = $('#btnScan');
 if (scanBtn) {
   scanBtn.addEventListener('click', async () => {
@@ -454,12 +427,10 @@ if (scanBtn) {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab) throw new Error('No active tab');
 
-      // Verify we're on a MyCase page
       if (!isMyCaseUrl(tab.url)) {
         throw new Error('Not on a MyCase page — navigate to https://public.courts.in.gov/mycase first');
       }
 
-      // Ensure content script is loaded (auto-reinjects if necessary)
       const scriptReady = await ensureContentScript(tab.id);
       if (!scriptReady) {
         throw new Error('Could not load the content script — please refresh the MyCase page');
@@ -477,19 +448,17 @@ if (scanBtn) {
           return;
         }
 
-        // Show parity modal so the user can verify extracted cases before merging.
         showParityModal(incomingCases, searchContext, mergeMode);
         return;
       } else {
         throw new Error(response?.error || 'Scan failed');
       }
     } catch (e) {
-      if (e.message?.includes('Receiving end does not exist') || e.message?.includes('Could not establish connection')) {
+      if (e.message?.includes('Receiving end does not exist')) {
         showToast('Content script not responding — refresh the MyCase page and try again', 'error', 6000);
       } else {
         showToast(e.message, 'error');
       }
-      console.error('[Sidepanel] Scan error:', e);
     } finally {
       scanBtn.disabled = false;
       scanBtn.innerHTML = `
@@ -500,7 +469,6 @@ if (scanBtn) {
   });
 }
 
-// ─── Helpers: HTML and String Cleaning ──────────────────────────────
 function cleanHtml(html) {
   if (!html) return '';
   const div = document.createElement('div');
@@ -515,7 +483,6 @@ function cleanCharges(charges) {
   return clean;
 }
 
-// ─── Demo Cases for Instant Pro Se Preview & Testing ───────────────
 export const DEMO_CASES = [
   {
     index: 1,
@@ -546,40 +513,9 @@ export const DEMO_CASES = [
     attorneys: 'Private Counsel',
     searchContext: 'Demo Cases (Marion & Hamilton County)',
     _source: 'demo'
-  },
-  {
-    index: 3,
-    case_number: '49G01-2001-F5-000100',
-    title: 'State of Indiana v. John Doe',
-    court: 'Marion Superior Court, Criminal Division 1',
-    case_type: 'F5 - Level 5 Felony',
-    filed: '01/15/2020',
-    status: '08/20/2021, Disposed - Dismissed',
-    dispositionDate: '08/20/2021',
-    charges: 'Battery Resulting in Bodily Injury - Dismissed',
-    parties: 'Doe, John (Defendant)',
-    attorneys: 'Public Defender',
-    searchContext: 'Demo Cases (Marion & Hamilton County)',
-    _source: 'demo'
-  },
-  {
-    index: 4,
-    case_number: '49D01-2001-IF-001234',
-    title: 'State of Indiana v. John Doe',
-    court: 'Marion Superior Court, Civil Division',
-    case_type: 'IF - Infraction',
-    filed: '01/01/2024',
-    status: '01/15/2024, Disposed',
-    dispositionDate: '01/15/2024',
-    charges: 'Speeding - Exceeding Maximum Speed Limit',
-    parties: 'Doe, John (Defendant)',
-    attorneys: 'None',
-    searchContext: 'Demo Cases (Marion & Hamilton County)',
-    _source: 'demo'
   }
 ];
 
-// ─── Case Content Parser (Supports JSON and HTML) ───────────────────
 export async function parseCaseData(text, filename = '') {
   if (!text || typeof text !== 'string') {
     throw new Error('Empty or invalid file content.');
@@ -646,7 +582,6 @@ export async function parseCaseData(text, filename = '') {
       throw new Error('Invalid JSON format: ' + jsonErr.message, { cause: jsonErr });
     }
   } else {
-    // HTML parsing
     const parser = new DOMParser();
     const parsedDoc = parser.parseFromString(text, 'text/html');
 
@@ -658,13 +593,11 @@ export async function parseCaseData(text, filename = '') {
       incomingCases = window.MyCaseScraper.scrapeSearchResults(parsedDoc);
       searchContext = window.MyCaseScraper.getSearchContext(parsedDoc) || searchContext;
     } else {
-      // Fallback: try direct DOM scraping on parsedDoc
       const domCases = window.MyCaseScraper._tryScrapeDOM ? window.MyCaseScraper._tryScrapeDOM(parsedDoc) : [];
       if (domCases.length > 0) {
         incomingCases = domCases;
         searchContext = window.MyCaseScraper.getSearchContext(parsedDoc) || searchContext;
       } else {
-        // Ultimate fallback: check for Indiana cause numbers in raw text
         const causeMatches = text.match(/\b\d{2}[A-Z]\d{2}-\d{4}-[A-Z0-9]{2}-\d{6}\b/gi);
         if (causeMatches && causeMatches.length > 0) {
           const uniqueCauses = Array.from(new Set(causeMatches.map(m => m.toUpperCase())));
@@ -678,23 +611,18 @@ export async function parseCaseData(text, filename = '') {
             status: 'Decided',
             dispositionDate: '',
             charges: 'Extracted from text',
-            parties: '',
-            attorneys: '',
-            caseToken: '',
             searchContext: searchContext,
             _source: 'text-fallback'
           }));
         } else {
-          throw new Error('The uploaded file does not appear to contain MyCase search results or Indiana cause numbers.');
+          throw new Error('No MyCase search results or Indiana cause numbers found.');
         }
       }
     }
   }
-
   return { cases: incomingCases, searchContext };
 }
 
-// ─── Unified Multi-File Upload & Drag-and-Drop Handler ─────────────
 export async function handleFiles(files) {
   if (!files || files.length === 0) return;
 
@@ -735,7 +663,6 @@ export async function handleFiles(files) {
           }
         }
       } catch (fileErr) {
-        console.warn(`[Scanner] Error reading ${file.name}:`, fileErr);
         parseErrors.push(`${file.name}: ${fileErr.message}`);
       }
     }
@@ -749,7 +676,6 @@ export async function handleFiles(files) {
       return;
     }
 
-    // De-duplicate cases across multiple uploaded files
     const existingKeySet = new Set();
     const uniqueIncoming = [];
     allIncomingCases.forEach(c => {
@@ -774,7 +700,6 @@ export async function handleFiles(files) {
     }
   } catch (err) {
     showToast(err.message || 'Error processing uploaded files.', 'error', 6000);
-    console.error('[Scanner] Upload handler error:', err);
   } finally {
     if (uploadStatus) uploadStatus.style.display = 'none';
     selectBtns.forEach(btn => {
@@ -783,25 +708,23 @@ export async function handleFiles(files) {
         btn.innerHTML = btn.dataset.originalHtml;
       }
     });
-    // Reset file input values so the same file can be re-uploaded
     const fileInputs = [$('#fileUpload'), $('#htmlUpload')].filter(Boolean);
     fileInputs.forEach(inp => { inp.value = ''; });
   }
 }
 
-// ─── Attach File Chooser and Dropzone Listeners ─────────────────────
-const selectBtns = [$('#btnSelectFiles'), $('#btnUploadHtml')].filter(Boolean);
-const fileInputs = [$('#fileUpload'), $('#htmlUpload')].filter(Boolean);
+const selectBtnsListeners = [$('#btnSelectFiles'), $('#btnUploadHtml')].filter(Boolean);
+const fileInputsListeners = [$('#fileUpload'), $('#htmlUpload')].filter(Boolean);
 
-selectBtns.forEach(btn => {
+selectBtnsListeners.forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const primaryInput = fileInputs[0];
+    const primaryInput = fileInputsListeners[0];
     primaryInput?.click();
   });
 });
 
-fileInputs.forEach(input => {
+fileInputsListeners.forEach(input => {
   input.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
@@ -810,7 +733,6 @@ fileInputs.forEach(input => {
   });
 });
 
-// Dropzone drag-and-drop
 const dropZone = $('#dropZone');
 if (dropZone) {
   let dragCounter = 0;
@@ -850,19 +772,16 @@ if (dropZone) {
     }
   });
 
-  // Clicking empty area inside dropzone opens file dialog
   dropZone.addEventListener('click', (e) => {
     if (e.target.closest('button, a, input, textarea, label')) return;
-    const primaryInput = fileInputs[0];
+    const primaryInput = fileInputsListeners[0];
     primaryInput?.click();
   });
 }
 
-// Prevent browser from opening files dropped outside dropzone
 window.addEventListener('dragover', (e) => { e.preventDefault(); }, false);
 window.addEventListener('drop', (e) => { e.preventDefault(); }, false);
 
-// ─── Attach Paste Drawer Listeners ─────────────────────────────────
 const pasteToggle = $('#btnPasteToggle');
 const pasteContainer = $('#pasteContainer');
 const pasteInput = $('#pasteInput');
@@ -900,7 +819,6 @@ if (btnProcessPaste && pasteInput) {
       showParityModal(result.cases, result.searchContext || 'Pasted MyCase Data', mergeMode);
     } catch (err) {
       showToast(err.message, 'error', 6000);
-      console.error('[Scanner] Paste error:', err);
     } finally {
       btnProcessPaste.disabled = false;
       btnProcessPaste.textContent = 'Import Pasted Data';
@@ -908,7 +826,6 @@ if (btnProcessPaste && pasteInput) {
   });
 }
 
-// ─── Attach Demo Cases Loader ──────────────────────────────────────
 const btnLoadDemo = $('#btnLoadDemo');
 if (btnLoadDemo) {
   btnLoadDemo.addEventListener('click', () => {
@@ -918,7 +835,6 @@ if (btnLoadDemo) {
   });
 }
 
-// ─── Bookmarklet Copy Action ───────────────────────────────────────
 $('#btnCopyAppBookmarklet')?.addEventListener('click', async () => {
   const code = "javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/expunger/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();";
   try {
@@ -929,7 +845,6 @@ $('#btnCopyAppBookmarklet')?.addEventListener('click', async () => {
   }
 });
 
-// ─── Deep Scrape Action ────────────────────────────────────────────
 const deepScrapeBtn = $('#btnDeepScrape');
 if (deepScrapeBtn) {
   deepScrapeBtn.addEventListener('click', async () => {
@@ -975,7 +890,7 @@ if (deepScrapeBtn) {
         throw new Error(response?.error || 'Deep scrape failed');
       }
     } catch (e) {
-      if (e.message?.includes('Receiving end does not exist') || e.message?.includes('Could not establish connection')) {
+      if (e.message?.includes('Receiving end does not exist')) {
         showToast('Content script not responding — refresh the MyCase page and try again', 'error', 6000);
       } else {
         showToast(e.message, 'error');
@@ -987,7 +902,6 @@ if (deepScrapeBtn) {
   });
 }
 
-// ─── Deep Scrape Progress Listener ─────────────────────────────────
 if (typeof chrome !== 'undefined' && chrome?.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((request) => {
     if (request.action === 'deepScrapeProgress') {
@@ -1020,7 +934,6 @@ export function renderResults() {
   if (elExcluded) elExcluded.textContent = s.excluded;
   if (elFee) elFee.textContent = s.totalFilingFee ? `~$${s.totalFilingFee}` : '$0';
 
-  // Update badge & results header pills
   const badge = $('#resultsBadge');
   if (badge) {
     badge.style.display = 'inline-flex';
@@ -1035,7 +948,6 @@ export function renderResults() {
     resultsSearchesPill.textContent = `from ${numSearches} search${numSearches === 1 ? '' : 'es'}`;
   }
 
-  // Statute breakdown
   const breakdownEl = $('#statuteBreakdown');
   if (breakdownEl) {
     breakdownEl.innerHTML = '';
@@ -1047,7 +959,6 @@ export function renderResults() {
     }
   }
 
-  // Multi-county detection & selector
   const countySelectCard = $('#countySelectCard');
   const countySelectDropdown = $('#selectCountyPacket');
   const counties = AppState.currentReport.counties ? Object.entries(AppState.currentReport.counties) : [];
@@ -1068,12 +979,23 @@ export function renderResults() {
     }
   }
 
-  // Case list
   const listEl = $('#caseList');
   if (!listEl) return;
   listEl.innerHTML = '';
 
-  // Flatten all county cases
+  // NEW: Surface the Cross-County Lifetime Forfeiture Warning
+  const block = AppState.currentReport.crossCountyBlock;
+  if (block && !block.isSafe) {
+    const banner = document.createElement('div');
+    banner.className = 'financial-warning-box cross-county-warning';
+    banner.style = 'background:rgba(220,38,38,0.08); border-left:4px solid #dc2626; padding:12px; margin-bottom:16px; border-radius:4px;';
+    banner.innerHTML = `
+      <strong style="color:#dc2626; display:block; margin-bottom:6px;">⚠️ ${escapeHtml(block.reason)}</strong>
+      <p style="margin:0; color:var(--text-primary); font-size:0.9rem; line-height:1.4;">${escapeHtml(block.message)}</p>
+    `;
+    listEl.appendChild(banner);
+  }
+
   const allCases = [];
   for (const county of Object.values(AppState.currentReport.counties || {})) {
     for (const c of county.cases) {
@@ -1081,7 +1003,6 @@ export function renderResults() {
     }
   }
 
-  // Sort: eligible first, then by case number
   allCases.sort((a, b) => {
     const aElig = a.eligibility?.eligible ? 0 : 1;
     const bElig = b.eligibility?.eligible ? 0 : 1;
@@ -1118,7 +1039,6 @@ function createCaseCard(caseData) {
   const card = document.createElement('div');
   card.className = 'case-card';
 
-  // Badge
   let badgeClass = 'excluded';
   let badgeText = 'EXCLUDED';
   if (el) {

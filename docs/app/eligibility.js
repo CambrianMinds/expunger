@@ -53,6 +53,7 @@ const IndianaExpungement = (() => {
     'XP': { level: 'expungement', class: null, severity: -10 },
     'TR': { level: 'civil', class: null, severity: -10 },
     'OV': { level: 'civil', class: null, severity: -10 },
+    'EV': { level: 'civil', class: null, severity: -10 }, // Added Evictions
   };
 
   // Offenses that are NOT eligible for expungement under any section (IC § 35-38-9)
@@ -95,10 +96,6 @@ const IndianaExpungement = (() => {
 
   /**
    * Extract the 2-letter case type code from a case number or case type string.
-   * Examples:
-   *   "49D01-1605-FD-000123" → "FD"
-   *   "FD - Class D Felony" → "FD"
-   *   "CM - Criminal Misdemeanor" → "CM"
    */
   function extractCaseTypeCode(caseNumberOrType) {
     if (!caseNumberOrType) return null;
@@ -121,7 +118,6 @@ const IndianaExpungement = (() => {
 
   /**
    * Extract the county court code from a case number.
-   * "49D01-1605-FD-000123" → "49D01"
    */
   function extractCourtCode(caseNumber) {
     if (!caseNumber) return null;
@@ -131,7 +127,6 @@ const IndianaExpungement = (() => {
 
   /**
    * Extract the county FIPS code from a court code.
-   * "49D01" → "49" (Marion County)
    */
   function extractCountyCode(courtCode) {
     if (!courtCode) return null;
@@ -146,23 +141,18 @@ const IndianaExpungement = (() => {
     if (!dateStr) return null;
     const str = dateStr.trim();
 
-    // MM/DD/YYYY
     let match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (match) return new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2]));
 
-    // YYYY-MM-DD
     match = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (match) return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
 
-    // Try generic Date parse
     const d = new Date(str);
     return isNaN(d.getTime()) ? null : d;
   }
 
   /**
    * Extract disposition date from a status string.
-   * "11/27/2007, Decided" → Date(2007, 10, 27)
-   * "12/09/1999, Pending" → Date(1999, 11, 9)
    */
   function extractDispositionDate(statusStr) {
     if (!statusStr) return null;
@@ -185,7 +175,6 @@ const IndianaExpungement = (() => {
 
   /**
    * Check if a charge description falls under an ineligibility rule.
-   * Returns the rule object if matched, otherwise null.
    */
   function checkIneligibility(charges) {
     if (!charges) return null;
@@ -208,14 +197,34 @@ const IndianaExpungement = (() => {
   }
 
   /**
-   * Determine the applicable IC § 35-38-9 section for a given case.
-   * Returns an eligibility assessment object.
-   * 
-   * @param {Object} caseData - Normalized case object
-   * @param {Date}   [asOf]   - Date to calculate eligibility against (default: today)
-   * @returns {Object} Eligibility result
+   * Determines if a case resulted in a criminal conviction.
+   * Checks CCS docket entries for explicit sentencing (S/DET) or dismissals (ODIS).
    */
-  function assessEligibility(caseData, asOf = new Date()) {
+  function determineConvictionStatus(caseData, typeInfo) {
+    if (!typeInfo || ['civil', 'domestic', 'guardianship', 'juvenile', 'adoption', 'estate', 'protective_order', 'civil_plenary', 'expungement', 'infraction'].includes(typeInfo.level)) {
+      return false;
+    }
+
+    let isConviction = true; // Default assumption for criminal cases
+
+    if (caseData.ccs) {
+      const hasSentencing = caseData.ccs.docketEntries?.some(e => e.type === 'S' || e.type === 'DET');
+      const hasDismissal = caseData.ccs.docketEntries?.some(e => e.type === 'ODIS' && (e.description || '').toUpperCase().includes('DISMISS'));
+      const allChargesDismissed = caseData.ccs.charges?.every(ch => ch.disposition && (ch.disposition.toUpperCase().includes('DISMISS') || ch.disposition.toUpperCase().includes('CONDITIONAL DISCHARGE')));
+
+      if (hasSentencing) {
+        isConviction = true; // Revoked discharge or standard sentencing
+      } else if (allChargesDismissed || hasDismissal) {
+        isConviction = false; // Successfully discharged or dismissed
+      }
+    }
+    return isConviction;
+  }
+
+  /**
+   * Determine the applicable IC § 35-38-9 section for a given case.
+   */
+  function assessEligibility(caseData, asOf = new Date(), mostRecentConvictionDate = null) {
     const typeCode = extractCaseTypeCode(caseData.case_type || caseData.caseNumber);
     const typeInfo = CASE_TYPE_MAP[typeCode] || null;
     const dispositionDate = extractDispositionDate(caseData.status) || parseDate(caseData.filed);
@@ -224,6 +233,10 @@ const IndianaExpungement = (() => {
     const isPending = statusUpper.includes('PENDING');
     const isDecided = statusUpper.includes('DECIDED') || statusUpper.includes('CLOSED') || statusUpper.includes('DISPOSED');
     const charges = caseData.charges || '';
+
+    // Calculate clean period across all cases
+    const isConviction = determineConvictionStatus(caseData, typeInfo);
+    const cleanPeriodYears = mostRecentConvictionDate ? yearsElapsed(mostRecentConvictionDate, asOf) : Infinity;
 
     const result = {
       caseNumber: caseData.case_number || caseData.caseNumber,
@@ -242,7 +255,7 @@ const IndianaExpungement = (() => {
       reason: '',
       warnings: [],
       filingFee: null,
-      grantType: null  // 'mandatory' or 'discretionary'
+      grantType: null
     };
 
     // ── Exclude non-criminal cases ──
@@ -263,9 +276,7 @@ const IndianaExpungement = (() => {
       result.exclusionReason = ineligibilityRule.description;
       result.mitigationType = ineligibilityRule.mitigationType;
       result.mitigationSteps = ineligibilityRule.mitigationSteps;
-      
-      // If it's strictly excluded, it is definitely ineligible. 
-      // If consent required, it is technically ineligible until consent is filed, but we flag it.
+
       if (ineligibilityRule.mitigationType === 'consent_required') {
         result.warnings.push('Prosecutor consent is REQUIRED to expunge this offense.');
       }
@@ -280,9 +291,9 @@ const IndianaExpungement = (() => {
     // ── Route by case type ──
 
     // IC § 35-38-9-1: Arrests, non-convictions, infractions
-    if (typeInfo && (typeInfo.level === 'infraction' || typeInfo.level === 'miscellaneous_criminal')) {
+    if (typeInfo && (typeInfo.level === 'infraction' || typeInfo.level === 'miscellaneous_criminal' || !isConviction)) {
       if (typeInfo.level === 'miscellaneous_criminal') {
-        result.warnings.push('MC (Miscellaneous Criminal) cases may involve misdemeanor convictions. If you were convicted in this case, it must be filed under § 2 (5-year wait) instead of § 1 (1-year wait). Verify the final disposition.');
+        result.warnings.push('MC (Miscellaneous Criminal) cases may involve misdemeanor convictions. Verify the final disposition.');
       }
       result.statute = 'IC § 35-38-9-1';
       result.statuteLabel = 'Arrest/Infraction Expungement (§ 1)';
@@ -302,7 +313,7 @@ const IndianaExpungement = (() => {
     }
 
     // IC § 35-38-9-2: Misdemeanor convictions
-    if (typeInfo && typeInfo.level === 'misdemeanor') {
+    if (typeInfo && typeInfo.level === 'misdemeanor' && isConviction) {
       result.statute = 'IC § 35-38-9-2';
       result.statuteLabel = 'Misdemeanor Expungement (§ 2)';
       result.waitingPeriod = 5;
@@ -313,20 +324,26 @@ const IndianaExpungement = (() => {
       }
       result.filingFee = 157;
       result.grantType = 'mandatory';
-      result.eligible = result.waitingPeriodMet;
-      result.reason = result.eligible
-        ? `ELIGIBLE: ${elapsed} years elapsed (≥5 years required). Filing fee ~$157. Mandatory grant.`
-        : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 5 years from conviction.`;
 
-      // Misdemeanors with "Pending" status might actually be non-convictions → § 1
+      // Enforce the 5-year clean period
+      result.eligible = result.waitingPeriodMet && (cleanPeriodYears >= 5);
+
+      if (result.waitingPeriodMet && cleanPeriodYears < 5) {
+        result.reason = `INELIGIBLE: Clean period broken. You have a recent conviction within the last 5 years (IC § 35-38-9-2(d)(2)).`;
+      } else {
+        result.reason = result.eligible
+          ? `ELIGIBLE: ${elapsed} years elapsed (≥5 years required). Filing fee ~$157. Mandatory grant.`
+          : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 5 years from conviction.`;
+      }
+
       if (isPending && !isDecided) {
         result.warnings.push('Status shows Pending — if never convicted, this may qualify under § 1 (non-conviction) instead of § 2.');
       }
       return result;
     }
 
-    // IC § 35-38-9-3: Class D / Level 6 non-violent felony convictions
-    if (typeInfo && typeInfo.level === 'felony') {
+    // IC § 35-38-9-3 & 4: Felony convictions
+    if (typeInfo && typeInfo.level === 'felony' && isConviction) {
       // §3 applies to Class D / Level 6 felonies (severity ≤ 3)
       if (typeInfo.severity <= 3) {
         result.statute = 'IC § 35-38-9-3';
@@ -345,10 +362,16 @@ const IndianaExpungement = (() => {
           result.warnings.push('Charge may involve bodily injury — court has discretion under § 3(b).');
         }
 
-        result.eligible = result.waitingPeriodMet;
-        result.reason = result.eligible
-          ? `ELIGIBLE: ${elapsed} years elapsed (≥8 years required). ${result.grantType === 'mandatory' ? 'Mandatory' : 'Discretionary'} grant.`
-          : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 8 years from conviction.`;
+        // Enforce the 8-year clean period
+        result.eligible = result.waitingPeriodMet && (cleanPeriodYears >= 8);
+
+        if (result.waitingPeriodMet && cleanPeriodYears < 8) {
+          result.reason = `INELIGIBLE: Clean period broken. You have a recent conviction within the last 8 years (IC § 35-38-9-3(d)(2)).`;
+        } else {
+          result.reason = result.eligible
+            ? `ELIGIBLE: ${elapsed} years elapsed. ${result.grantType === 'mandatory' ? 'Mandatory' : 'Discretionary'} grant.`
+            : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 8 years.`;
+        }
         return result;
       }
 
@@ -363,11 +386,18 @@ const IndianaExpungement = (() => {
       }
       result.filingFee = 157;
       result.grantType = 'discretionary';
-      result.eligible = result.waitingPeriodMet;
-      result.reason = result.eligible
-        ? `POTENTIALLY ELIGIBLE: ${elapsed} years elapsed (≥10 years required). Court has DISCRETION — not mandatory. Requires showing of rehabilitation.`
-        : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 10 years from conviction.`;
-      result.warnings.push('Higher-level felonies require court discretion and are NOT mandatory grants. Petitioner must demonstrate rehabilitation and changed circumstances.');
+
+      // Enforce the 10-year clean period
+      result.eligible = result.waitingPeriodMet && (cleanPeriodYears >= 10);
+
+      if (result.waitingPeriodMet && cleanPeriodYears < 10) {
+        result.reason = `INELIGIBLE: Clean period broken. You have a recent conviction within the last 10 years.`;
+      } else {
+        result.reason = result.eligible
+          ? `POTENTIALLY ELIGIBLE: ${elapsed} years elapsed. Court has DISCRETION. Requires showing of rehabilitation.`
+          : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 10 years from conviction.`;
+      }
+      result.warnings.push('Higher-level felonies require court discretion and are NOT mandatory grants.');
       return result;
     }
 
@@ -379,10 +409,6 @@ const IndianaExpungement = (() => {
 
   /**
    * Partition cases by county for separate petition filings.
-   * Under IC § 35-38-9-8(a), all cases in the same county must be in one petition.
-   * 
-   * @param {Array} cases - Array of normalized case objects
-   * @returns {Object} Map of countyCode → { courtCode, courtName, cases: [...] }
    */
   function partitionByCounty(cases) {
     const counties = {};
@@ -405,12 +431,6 @@ const IndianaExpungement = (() => {
 
   /**
    * Enforces the IC § 35-38-9-9(d) 365-day multi-county filing rule.
-   * If a user has eligible cases in County A, but ineligible cases in County B
-   * that will not become eligible within 365 days of today, they should be BLOCKED
-   * from filing County A today. (If they filed A today, B would never be eligible).
-   * 
-   * @param {Array} cases - Array of cases with .eligibility attached
-   * @returns {Object} Block status and details
    */
   function checkCrossCounty365DaySafety(cases) {
     let hasEligibleCases = false;
@@ -423,10 +443,7 @@ const IndianaExpungement = (() => {
 
     for (const c of cases) {
       if (!c.eligibility) continue;
-      
-      // IC § 35-38-9-1 Exemption: Arrest records and non-convictions carry no
-      // lifetime limit and no 365-day multi-county consolidation clock under IC § 35-38-9-9(d) & (i).
-      // Only conviction tiers (IC §§ 35-38-9-2 through 35-38-9-5) are restricted.
+
       if (c.eligibility.statute === 'IC § 35-38-9-1') continue;
 
       if (c.eligibility.eligible) {
@@ -459,12 +476,21 @@ const IndianaExpungement = (() => {
 
   /**
    * Run full eligibility analysis on an array of cases.
-   * Returns a structured report grouped by county and statute section.
-   * 
-   * @param {Array} cases - Array of normalized case objects
-   * @returns {Object} Full eligibility report
    */
   function analyzeAll(cases) {
+    // PASS 1: Find the most recent criminal conviction date across ALL cases
+    let mostRecentConvictionDate = null;
+    for (const c of cases) {
+      const typeCode = extractCaseTypeCode(c.case_type || c.caseNumber);
+      const typeInfo = CASE_TYPE_MAP[typeCode] || null;
+      if (determineConvictionStatus(c, typeInfo)) {
+        const dispDate = extractDispositionDate(c.status) || parseDate(c.filed);
+        if (dispDate && (!mostRecentConvictionDate || dispDate > mostRecentConvictionDate)) {
+          mostRecentConvictionDate = dispDate;
+        }
+      }
+    }
+
     const countyGroups = partitionByCounty(cases);
     const report = {
       totalCases: cases.length,
@@ -490,7 +516,8 @@ const IndianaExpungement = (() => {
       };
 
       for (const c of group.cases) {
-        const assessment = assessEligibility(c);
+        // PASS 2: Pass the most recent conviction date into the rules engine
+        const assessment = assessEligibility(c, new Date(), mostRecentConvictionDate);
         countyReport.cases.push({ ...c, eligibility: assessment });
 
         if (assessment.eligible) {
@@ -501,7 +528,6 @@ const IndianaExpungement = (() => {
           report.summary.byStatute[sect] = (report.summary.byStatute[sect] || 0) + 1;
           countyReport.sections[sect] = (countyReport.sections[sect] || 0) + 1;
 
-          // Filing fee: only charged once per petition (highest applicable)
           if (assessment.filingFee && assessment.filingFee > report.summary.totalFilingFee) {
             report.summary.totalFilingFee = assessment.filingFee;
           }
@@ -519,8 +545,6 @@ const IndianaExpungement = (() => {
       report.counties[countyCode] = countyReport;
     }
 
-    // After evaluating all cases, check cross-county safety
-    // Flatten cases that have had their eligibility evaluated
     const evaluatedCases = [];
     for (const group of Object.values(report.counties)) {
       evaluatedCases.push(...group.cases);
