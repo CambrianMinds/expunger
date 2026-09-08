@@ -25,6 +25,8 @@
     content="Indiana expungement, IC 35-38-9, Indiana second chance law, clean slate Indiana, expunge criminal record, pro se legal help, Indiana court forms">
   <meta name="author" content="CambrianMinds">
   <meta name="theme-color" content="#101c3d">
+  <link rel="canonical" href="https://cambrianminds.github.io/expunger/">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <!-- OpenGraph / Social Sharing -->
   <meta property="og:type" content="website">
@@ -41,6 +43,85 @@
   <meta name="twitter:description"
     content="Free pro se document assistant for Indiana Code § 35-38-9. In-browser MyCase record extraction and 10 official court pleadings.">
   <meta name="twitter:image" content="assets/hero.jpg">
+
+  <!-- Schema.org Structured Data (WebApplication + FAQPage) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://cambrianminds.github.io/expunger/#webapp",
+        "name": "Indiana Expungement Assistant",
+        "alternateName": "Expunger",
+        "url": "https://cambrianminds.github.io/expunger/",
+        "applicationCategory": "LegalApplication",
+        "operatingSystem": "All modern web browsers (Chrome, Edge, Firefox, Safari)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Free, 100% private, client-side pro se legal assistant that parses Indiana MyCase court records and compiles 10 official court-ready expungement pleadings under Indiana Code § 35-38-9.",
+        "creator": {
+          "@type": "Organization",
+          "name": "CambrianMinds",
+          "url": "https://github.com/CambrianMinds"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Justin Bogner",
+          "url": "https://github.com/CambrianMinds"
+        },
+        "featureList": [
+          "In-browser Odyssey MyCase record scraping",
+          "Automated statutory eligibility analysis (IC § 35-38-9 tiers 1-5)",
+          "Indiana Trial Rule 10 compliant PDF pleadings generation",
+          "Zero telemetry, 100% local client-side processing",
+          "All 92 Indiana counties directory and prosecutor routing"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://cambrianminds.github.io/expunger/#faq-schema",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How much does an expungement cost in Indiana if I represent myself?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Petitions for non-convictions (arrests, dismissals, dropped charges under IC § 35-38-9-1) require $0 in court filing fees. For convictions, Indiana trial courts charge a single civil filing fee (typically ~$157), regardless of how many cases you consolidate in that county. If you have low income, you can submit the included DOC 08 Fee Waiver Petition under IC § 33-37-3-2."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is Indiana's One-Shot Rule under IC § 35-38-9-9?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Under Indiana Code § 35-38-9-9(i), a person may file a petition for expungement of a conviction record only one time in their life. Any conviction omitted from your petition cannot be expunged later. If you have convictions in multiple counties, all petitions must be filed within a 365-day window."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How long do I have to wait before expunging my record in Indiana?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Waiting periods depend on the level of offense: 1 year from arrest/dismissal for non-convictions (IC § 35-38-9-1); 5 years from conviction for misdemeanors (IC § 35-38-9-2); 8 years for Class D / Level 6 felonies (IC § 35-38-9-3); 8 years (or 3 years post-sentence) for major felonies Levels 1-5 (IC § 35-38-9-4); and 10 years with prosecutor written consent for serious bodily injury felonies (IC § 35-38-9-5)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this tool free and private?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. This tool is 100% free, open source under the MIT license, and executes entirely in your browser. No personal data, case numbers, or documents are transmitted to any server or cloud database."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <!-- Favicon & PWA Icons -->
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
@@ -1133,6 +1214,10 @@
       <div class="footer-legal-bar">
         <span>© 2026 Indiana Expungement Assistant · Developed by Justin Bogner · A CambrianMinds Project</span>
         <span>Not Legal Advice · For Self-Represented Petitioners (Pro Se)</span>
+      </div>
+
+      <div class="footer-collab-bar">
+        <span>Need civic technology, automated document workflows, or high-security client-side web tools? The developer &amp; designer of this tool is available for select engineering engagements. <a href="mailto:justinbogner1618@gmail.com" class="collab-link">Inquire about availability →</a></span>
       </div>
     </div>
   </footer>
