@@ -71,6 +71,7 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   cursor: default;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -93,8 +94,8 @@ body {
   position: sticky;
   top: 57px;
   z-index: 90;
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   transition: background-color var(--transition), border-color var(--transition);
 }
 
@@ -103,6 +104,7 @@ body {
   align-items: stretch;
   gap: 0.25rem;
   overflow-x: auto;
+  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
@@ -486,6 +488,7 @@ body {
   font-size: 0.88rem;
   color: var(--text-secondary);
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -998,6 +1001,7 @@ body {
   justify-content: space-between;
   gap: 1rem;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -2406,6 +2410,7 @@ select.is-invalid {
   padding: 0.95rem 1.25rem;
   cursor: pointer;
   background-color: var(--color-surface-subtle);
+  -webkit-user-select: none;
   user-select: none;
   font-size: 0.92rem;
   font-weight: 600;

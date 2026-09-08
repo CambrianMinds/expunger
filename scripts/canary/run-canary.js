@@ -75,7 +75,9 @@ async function runCanary() {
             hasKo = Array.isArray(res) && res.length > 0;
           }
         }
-      } catch (_) {}
+      } catch (err) {
+        // Context might not be attached to body yet
+      }
       return hasRows || hasKo;
     }, { timeout: 30000 });
 
@@ -221,7 +223,9 @@ async function runCanary() {
             if (caseData.case_number) {
               cases.push(caseData);
             }
-          } catch (_) {}
+          } catch (rowErr) {
+            // Skip unparseable row
+          }
         });
       }
 

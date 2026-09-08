@@ -46,7 +46,9 @@ async function setupThemeToggle() {
       if (chrome?.storage?.local) {
         await chrome.storage.local.set({ theme });
       }
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Failed to save theme to storage:', e);
+    }
     toggleBtn.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
     toggleBtn.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`;
   }
@@ -60,7 +62,9 @@ async function setupThemeToggle() {
     if (savedTheme) {
       document.documentElement.setAttribute('data-theme', savedTheme);
     }
-  } catch (_) {}
+  } catch (e) {
+    console.warn('Failed to retrieve theme from storage:', e);
+  }
 
   toggleBtn.addEventListener('click', async () => {
     const current = getActiveTheme();
@@ -98,7 +102,9 @@ async function init() {
     let lastScan = null;
     try {
       lastScan = await chrome?.runtime?.sendMessage?.({ action: 'loadLastScan' });
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Failed to request last scan from runtime:', e);
+    }
     if (!lastScan?.scan) {
       const stored = localStorage.getItem('lastScanResults');
       if (stored) lastScan = { scan: JSON.parse(stored) };
@@ -112,7 +118,9 @@ async function init() {
         renderResults();
       }
     }
-  } catch (_) {}
+  } catch (e) {
+    console.warn('Failed to parse or apply last scan data:', e);
+  }
 
   updateChecklist();
 

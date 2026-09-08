@@ -67,7 +67,9 @@ function setupDisclaimerGate() {
     if (!ackCheck?.checked) return;
     try {
       localStorage.setItem('expungement_pro_se_acknowledged', 'true');
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Unable to persist disclaimer acknowledgment in localStorage:', e);
+    }
     gate.style.display = 'none';
   });
 }

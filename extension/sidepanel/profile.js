@@ -13,7 +13,9 @@ import { showToast, updateChecklist } from './ui.js';
       let result = null;
       try {
         result = await chrome?.runtime?.sendMessage?.({ action: 'loadPetitionerProfile' });
-      } catch (_) {}
+      } catch (e) {
+        console.warn('Unable to load petitioner profile from extension runtime:', e);
+      }
       if (!result?.profile) {
         const stored = localStorage.getItem('petitionerProfile');
         if (stored) result = { profile: JSON.parse(stored) };
@@ -761,10 +763,14 @@ import { showToast, updateChecklist } from './ui.js';
 
     try {
       await chrome?.runtime?.sendMessage?.({ action: 'savePetitionerProfile', profile: AppState.petitionerProfile });
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Unable to save petitioner profile to extension runtime:', e);
+    }
     try {
       localStorage.setItem('petitionerProfile', JSON.stringify(AppState.petitionerProfile));
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Unable to save petitioner profile to localStorage:', e);
+    }
 
     showToast('✓ Profile validated & saved to secure local storage', 'success', 3500);
     updateChecklist();
