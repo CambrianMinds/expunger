@@ -1,15 +1,15 @@
 # Indiana Expungement Assistant
 
-[![Build Status](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square)](https://github.com/CambrianMinds/indiana-expungement-assistant)
+[![Build Status](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square)](https://github.com/CambrianMinds/expunger)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Chrome%20MV3%20%7C%20Web%20App-indigo?style=flat-square)](https://cambrianminds.github.io/indiana-expungement-assistant/)
+[![Platform](https://img.shields.io/badge/platform-Chrome%20MV3%20%7C%20Web%20App-indigo?style=flat-square)](https://cambrianminds.github.io/expunger/)
 [![Statute](https://img.shields.io/badge/Indiana%20Code-IC%20%C2%A7%2035--38--9-emerald?style=flat-square)](https://iga.in.gov/laws/2023/ic/titles/35#35-38-9)
 
 A 100% client-side civic document preparation engine that scrapes Indiana MyCase court records in the user's browser and generates 10 court-ready expungement pleadings (IC § 35-38-9) adhering to Indiana Trial Rule 10.
 
 - **Zero Cloud / Zero Telemetry**: All scraping, eligibility evaluation, and PDF compilation execute entirely in-memory in the browser. PII never leaves the client.
 - **Dual Deployments**: Distributed as a Chrome Manifest V3 extension (`extension/`) and a standalone PWA / web application (`docs/app/`).
-- **Live Web App**: [https://cambrianminds.github.io/indiana-expungement-assistant/](https://cambrianminds.github.io/indiana-expungement-assistant/)
+- **Live Web App**: [https://cambrianminds.github.io/expunger/](https://cambrianminds.github.io/expunger/)
 
 ---
 
@@ -119,8 +119,8 @@ npm run test:parity
 
 ### Setup
 ```bash
-git clone https://github.com/CambrianMinds/indiana-expungement-assistant.git
-cd indiana-expungement-assistant
+git clone https://github.com/CambrianMinds/expunger.git
+cd expunger
 npm install
 ```
 

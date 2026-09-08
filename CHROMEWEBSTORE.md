@@ -103,7 +103,7 @@ When prompted by the Chrome Developer Dashboard, use the exact justifications be
 - **Authentication Info**: Not collected.
 - **Web History**: Not collected. The extension only interacts with `public.courts.in.gov/mycase`.
 - **User Activity / Analytics**: Zero analytics, zero telemetry, zero tracking cookies.
-- **Privacy Policy URL**: `https://cambrianminds.github.io/indiana-expungement-assistant/#privacy`
+- **Privacy Policy URL**: `https://cambrianminds.github.io/expunger/#privacy`
 
 ---
 
@@ -111,9 +111,9 @@ When prompted by the Chrome Developer Dashboard, use the exact justifications be
 
 1. Zip the extension directory:
    - Select all files inside `extension/` (`manifest.json`, `background.js`, `content.js`, `eligibility.js`, `icons/`, `sidepanel/`).
-   - Create a ZIP archive: `indiana-expungement-assistant-v1.0.0.zip`.
+   - Create a ZIP archive: `expunger-v1.0.0.zip`.
 2. Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
-3. Click **Add new item** and upload `indiana-expungement-assistant-v1.0.0.zip`.
+3. Click **Add new item** and upload `expunger-v1.0.0.zip`.
 4. Fill in the **Store Listing** fields using Section 1 above.
 5. Upload the **Store Icon** (`docs/assets/webstore/store_icon_128.png`), **Small Promo Tile** (`docs/assets/webstore/small_promo_tile_440x280.png`), and **Marquee Promo Tile** (`docs/assets/webstore/marquee_promo_tile_1400x560.png`).
 6. Paste the **Permissions Justifications** from Section 3.

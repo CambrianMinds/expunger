@@ -4,7 +4,7 @@ import { checkBackend } from './generator.js';
 import { updateBatchPanelUI, renderResults } from './scanner.js';
 import { updateChecklist } from './ui.js';
 
-export const SITE_GUIDE_URL = 'https://cambrianminds.github.io/indiana-expungement-assistant/#instructions';
+export const SITE_GUIDE_URL = 'https://cambrianminds.github.io/expunger/#instructions';
 
 // Setup guide button click listeners
 function setupGuideListeners() {

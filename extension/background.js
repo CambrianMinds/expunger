@@ -95,7 +95,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     chrome.tabs.create({
-      url: 'https://cambrianminds.github.io/indiana-expungement-assistant/#instructions'
+      url: 'https://cambrianminds.github.io/expunger/#instructions'
     });
     chrome.storage.local.set({ hasSeenWelcomeGuide: true });
   }

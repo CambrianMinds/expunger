@@ -1,7 +1,7 @@
 /**
  * scripts/sync-repos.js
  * Automatically synchronizes shared statutory logic, court directory, and vendored libraries
- * from indiana-expungement-assistant to indiana-expunge-pro (and vice-versa).
+ * from expunger to indiana-expunge-pro (and vice-versa).
  */
 
 const fs = require('fs');

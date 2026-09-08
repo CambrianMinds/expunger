@@ -42,7 +42,7 @@ When utilizing this application (either via the Chrome Browser Extension or the 
 ## 3. Storage Mechanisms & Security
 
 - **Chrome Extension:** Scraped court records and profile data are stored in `chrome.storage.local`. This storage is sandboxed by Google Chrome to the extension's private origin and is never shared with third parties or websites.
-- **Standalone Web App:** Scraped or manually entered records are stored in your browser's private `localStorage` origin (`indiana-expungement-assistant`).
+- **Standalone Web App:** Scraped or manually entered records are stored in your browser's private `localStorage` origin (`expunger`).
 - **Encryption in Transit:** All interactions with Indiana MyCase (`public.courts.in.gov`) occur over standard HTTPS directly between your browser and the state judicial server. This software acts solely as an in-browser parser on your active session.
 
 ---
@@ -71,4 +71,4 @@ Visiting those links directs you to external state government servers subject to
 ## 6. Open-Source Verification
 
 Because this project is open-source under the MIT License, our privacy guarantees are fully auditable. You or any security researcher can inspect the complete source code on GitHub at:
-[https://github.com/CambrianMinds/indiana-expungement-assistant](https://github.com/CambrianMinds/indiana-expungement-assistant)
+[https://github.com/CambrianMinds/expunger](https://github.com/CambrianMinds/expunger)
