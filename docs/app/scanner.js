@@ -262,10 +262,10 @@ $('#btnClearScans')?.addEventListener('click', () => {
 // Jump from Results back to Scan to add another name / county
 $('#btnScanAnotherPage')?.addEventListener('click', () => {
   switchTab('scan');
-  showToast('💡 Search MyCase for another maiden name, married name, or county, then click Scan.', 'info', 5000);
-  const scanBtn = $('#btnScan');
-  if (scanBtn) {
-    scanBtn.scrollIntoView({ behavior: 'smooth' });
+  showToast('💡 Upload another MyCase file or drag and drop to combine with existing records.', 'info', 5000);
+  const target = $('#dropZone') || $('#btnSelectFiles') || $('#btnScan');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
   }
 });
 
@@ -500,87 +500,421 @@ if (scanBtn) {
   });
 }
 
-// ─── Offline JSON / HTML Upload Action ─────────────────────────────
-const btnUploadHtml = $('#btnUploadHtml');
-const htmlUpload = $('#htmlUpload');
+// ─── Helpers: HTML and String Cleaning ──────────────────────────────
+function cleanHtml(html) {
+  if (!html) return '';
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent.trim();
+}
 
-if (btnUploadHtml && htmlUpload) {
-  btnUploadHtml.addEventListener('click', () => {
-    htmlUpload.click();
+function cleanCharges(charges) {
+  if (!charges) return '';
+  let clean = charges.replace(/\*{3}\s*REFERENCE CCS ENTRY\s*\*{3}/gi, '').trim();
+  clean = clean.replace(/\s+/g, ' ').trim();
+  return clean;
+}
+
+// ─── Demo Cases for Instant Pro Se Preview & Testing ───────────────
+export const DEMO_CASES = [
+  {
+    index: 1,
+    case_number: '49D01-1804-CM-014920',
+    title: 'State of Indiana v. John Doe',
+    court: 'Marion Superior Court, Criminal Division 1',
+    case_type: 'CM - Criminal Misdemeanor',
+    filed: '04/15/2018',
+    status: '05/10/2018, Disposed - Conviction',
+    dispositionDate: '05/10/2018',
+    charges: 'Operating a Vehicle While Intoxicated - Class A Misdemeanor',
+    parties: 'Doe, John (Defendant)',
+    attorneys: 'Public Defender',
+    searchContext: 'Demo Cases (Marion & Hamilton County)',
+    _source: 'demo'
+  },
+  {
+    index: 2,
+    case_number: '29D03-1509-F6-007812',
+    title: 'State of Indiana v. John Doe',
+    court: 'Hamilton Superior Court 3',
+    case_type: 'F6 - Level 6 Felony, Theft',
+    filed: '09/01/2015',
+    status: '11/20/2015, Disposed - Conviction',
+    dispositionDate: '11/20/2015',
+    charges: 'Theft - Prior Conviction (Level 6 Felony)',
+    parties: 'Doe, John (Defendant)',
+    attorneys: 'Private Counsel',
+    searchContext: 'Demo Cases (Marion & Hamilton County)',
+    _source: 'demo'
+  },
+  {
+    index: 3,
+    case_number: '49G01-2001-F5-000100',
+    title: 'State of Indiana v. John Doe',
+    court: 'Marion Superior Court, Criminal Division 1',
+    case_type: 'F5 - Level 5 Felony',
+    filed: '01/15/2020',
+    status: '08/20/2021, Disposed - Dismissed',
+    dispositionDate: '08/20/2021',
+    charges: 'Battery Resulting in Bodily Injury - Dismissed',
+    parties: 'Doe, John (Defendant)',
+    attorneys: 'Public Defender',
+    searchContext: 'Demo Cases (Marion & Hamilton County)',
+    _source: 'demo'
+  },
+  {
+    index: 4,
+    case_number: '49D01-2001-IF-001234',
+    title: 'State of Indiana v. John Doe',
+    court: 'Marion Superior Court, Civil Division',
+    case_type: 'IF - Infraction',
+    filed: '01/01/2024',
+    status: '01/15/2024, Disposed',
+    dispositionDate: '01/15/2024',
+    charges: 'Speeding - Exceeding Maximum Speed Limit',
+    parties: 'Doe, John (Defendant)',
+    attorneys: 'None',
+    searchContext: 'Demo Cases (Marion & Hamilton County)',
+    _source: 'demo'
+  }
+];
+
+// ─── Case Content Parser (Supports JSON and HTML) ───────────────────
+export async function parseCaseData(text, filename = '') {
+  if (!text || typeof text !== 'string') {
+    throw new Error('Empty or invalid file content.');
+  }
+
+  let incomingCases = [];
+  let searchContext = filename ? `File: ${filename}` : 'MyCase Import';
+  const trimmed = text.trim();
+  const isJson = (filename && filename.toLowerCase().endsWith('.json')) || trimmed.startsWith('{') || trimmed.startsWith('[');
+
+  if (isJson) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      let rawList = [];
+      if (Array.isArray(parsed)) {
+        rawList = parsed;
+      } else if (parsed && Array.isArray(parsed.cases)) {
+        rawList = parsed.cases;
+        searchContext = parsed.searchContext || searchContext;
+      } else if (parsed && Array.isArray(parsed.currentCases)) {
+        rawList = parsed.currentCases;
+        searchContext = parsed.searchContext || searchContext;
+      } else if (parsed && parsed.scan && Array.isArray(parsed.scan.cases)) {
+        rawList = parsed.scan.cases;
+        searchContext = parsed.scan.searchContext || searchContext;
+      } else if (parsed && Array.isArray(parsed.Results)) {
+        rawList = parsed.Results;
+      } else if (parsed && parsed.ob && Array.isArray(parsed.ob.Results)) {
+        rawList = parsed.ob.Results;
+      } else if (parsed && (parsed.case_number || parsed.CaseNumber || parsed.caseNumber)) {
+        rawList = [parsed];
+      } else {
+        throw new Error('JSON does not contain a recognized case list structure.');
+      }
+
+      incomingCases = rawList.map((c, idx) => {
+        const caseNum = (c.case_number || c.CaseNumber || c.caseNumber || '').trim().toUpperCase();
+        const status = c.status || c.CaseStatus || c.statusDate || '';
+        let dispDate = c.dispositionDate || '';
+        if (!dispDate && status) {
+          const m = status.match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
+          if (m) dispDate = m[1];
+        }
+        return {
+          index: c.index || idx + 1,
+          case_number: caseNum,
+          title: cleanHtml(c.title || c.Style || c.caseTitle || c.style || ''),
+          court: c.court || c.Court || '',
+          case_type: c.case_type || c.CaseType || c.caseType || '',
+          filed: c.filed || c.FileDate || c.fileDate || '',
+          status: status,
+          dispositionDate: dispDate,
+          charges: cleanCharges(c.charges || c.Charges || ''),
+          parties: c.parties || c.Parties || '',
+          attorneys: c.attorneys || c.Attorneys || '',
+          caseToken: c.caseToken || c.CaseToken || c.CaseID || '',
+          ccs: c.ccs || null,
+          financials: c.financials || null,
+          searchContext: c.searchContext || searchContext,
+          _source: c._source || 'json-upload'
+        };
+      }).filter(c => Boolean(c.case_number));
+    } catch (jsonErr) {
+      throw new Error('Invalid JSON format: ' + jsonErr.message, { cause: jsonErr });
+    }
+  } else {
+    // HTML parsing
+    const parser = new DOMParser();
+    const parsedDoc = parser.parseFromString(text, 'text/html');
+
+    if (!window.MyCaseScraper) {
+      throw new Error('Scraper module not loaded.');
+    }
+
+    if (window.MyCaseScraper.isSearchResultsPage(parsedDoc)) {
+      incomingCases = window.MyCaseScraper.scrapeSearchResults(parsedDoc);
+      searchContext = window.MyCaseScraper.getSearchContext(parsedDoc) || searchContext;
+    } else {
+      // Fallback: try direct DOM scraping on parsedDoc
+      const domCases = window.MyCaseScraper._tryScrapeDOM ? window.MyCaseScraper._tryScrapeDOM(parsedDoc) : [];
+      if (domCases.length > 0) {
+        incomingCases = domCases;
+        searchContext = window.MyCaseScraper.getSearchContext(parsedDoc) || searchContext;
+      } else {
+        // Ultimate fallback: check for Indiana cause numbers in raw text
+        const causeMatches = text.match(/\b\d{2}[A-Z]\d{2}-\d{4}-[A-Z0-9]{2}-\d{6}\b/gi);
+        if (causeMatches && causeMatches.length > 0) {
+          const uniqueCauses = Array.from(new Set(causeMatches.map(m => m.toUpperCase())));
+          incomingCases = uniqueCauses.map((cn, idx) => ({
+            index: idx + 1,
+            case_number: cn,
+            title: 'Extracted Case ' + cn,
+            court: '',
+            case_type: cn.split('-')[2] || '',
+            filed: '',
+            status: 'Decided',
+            dispositionDate: '',
+            charges: 'Extracted from text',
+            parties: '',
+            attorneys: '',
+            caseToken: '',
+            searchContext: searchContext,
+            _source: 'text-fallback'
+          }));
+        } else {
+          throw new Error('The uploaded file does not appear to contain MyCase search results or Indiana cause numbers.');
+        }
+      }
+    }
+  }
+
+  return { cases: incomingCases, searchContext };
+}
+
+// ─── Unified Multi-File Upload & Drag-and-Drop Handler ─────────────
+export async function handleFiles(files) {
+  if (!files || files.length === 0) return;
+
+  const uploadStatus = $('#uploadStatus');
+  const uploadStatusText = $('#uploadStatusText');
+  const selectBtns = [$('#btnSelectFiles'), $('#btnUploadHtml')].filter(Boolean);
+
+  selectBtns.forEach(btn => {
+    btn.disabled = true;
+    btn.dataset.originalHtml = btn.dataset.originalHtml || btn.innerHTML;
+    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Reading...';
   });
 
-  htmlUpload.addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  if (uploadStatus) uploadStatus.style.display = 'flex';
+  if (uploadStatusText) {
+    uploadStatusText.textContent = files.length === 1
+      ? `Reading ${files[0].name}...`
+      : `Processing ${files.length} files...`;
+  }
 
-    btnUploadHtml.disabled = true;
-    btnUploadHtml.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Parsing...';
+  let allIncomingCases = [];
+  let combinedContexts = [];
+  let parseErrors = [];
 
-    try {
-      const text = await file.text();
-      let incomingCases = [];
-      let searchContext = 'MyCase Search';
-      const isJson = file.name.endsWith('.json') || text.trim().startsWith('{') || text.trim().startsWith('[');
-
-      if (isJson) {
-        try {
-          const parsed = JSON.parse(text);
-          if (Array.isArray(parsed)) {
-            incomingCases = parsed;
-          } else if (parsed && Array.isArray(parsed.cases)) {
-            incomingCases = parsed.cases;
-            searchContext = parsed.searchContext || searchContext;
-          } else if (parsed && Array.isArray(parsed.currentCases)) {
-            incomingCases = parsed.currentCases;
-            searchContext = parsed.searchContext || searchContext;
-          } else {
-            throw new Error('JSON does not contain a recognized case list structure.');
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (uploadStatusText && files.length > 1) {
+        uploadStatusText.textContent = `Reading file ${i + 1} of ${files.length}: ${file.name}...`;
+      }
+      try {
+        const text = await file.text();
+        const result = await parseCaseData(text, file.name);
+        if (result.cases && result.cases.length > 0) {
+          allIncomingCases.push(...result.cases);
+          if (result.searchContext && !combinedContexts.includes(result.searchContext)) {
+            combinedContexts.push(result.searchContext);
           }
-        } catch (jsonErr) {
-          throw new Error('Invalid JSON file format: ' + jsonErr.message, { cause: jsonErr });
+        }
+      } catch (fileErr) {
+        console.warn(`[Scanner] Error reading ${file.name}:`, fileErr);
+        parseErrors.push(`${file.name}: ${fileErr.message}`);
+      }
+    }
+
+    if (allIncomingCases.length === 0) {
+      if (parseErrors.length > 0) {
+        showToast(parseErrors[0], 'error', 6000);
+      } else {
+        showToast('No case records found in the uploaded file(s).', 'warning', 4000);
+      }
+      return;
+    }
+
+    // De-duplicate cases across multiple uploaded files
+    const existingKeySet = new Set();
+    const uniqueIncoming = [];
+    allIncomingCases.forEach(c => {
+      const key = (c.case_number || '').trim().toUpperCase();
+      if (key) {
+        if (!existingKeySet.has(key)) {
+          existingKeySet.add(key);
+          uniqueIncoming.push(c);
         }
       } else {
-        // HTML parsing
-        const parser = new DOMParser();
-        const parsedDoc = parser.parseFromString(text, 'text/html');
-
-        // Check if it's a valid MyCase page
-        if (!window.MyCaseScraper) {
-          throw new Error('Scraper module not loaded.');
-        }
-
-        if (!window.MyCaseScraper.isSearchResultsPage(parsedDoc)) {
-          throw new Error('The uploaded file does not appear to be a MyCase search results page.');
-        }
-
-        incomingCases = window.MyCaseScraper.scrapeSearchResults(parsedDoc);
-        searchContext = window.MyCaseScraper.getSearchContext(parsedDoc);
+        uniqueIncoming.push(c);
       }
+    });
 
-      const mergeMode = $('#chkMergeCases')?.checked ?? true;
+    const searchContext = combinedContexts.length > 0 ? combinedContexts.join(' · ') : 'MyCase Import';
+    const mergeMode = $('#chkMergeCases')?.checked ?? true;
 
-      if (!incomingCases || incomingCases.length === 0) {
-        showToast('No case records found in the uploaded file.', 'warning', 4000);
+    showParityModal(uniqueIncoming, searchContext, mergeMode);
+
+    if (parseErrors.length > 0) {
+      showToast(`Imported ${uniqueIncoming.length} cases with warning: ${parseErrors.join('; ')}`, 'warning', 6000);
+    }
+  } catch (err) {
+    showToast(err.message || 'Error processing uploaded files.', 'error', 6000);
+    console.error('[Scanner] Upload handler error:', err);
+  } finally {
+    if (uploadStatus) uploadStatus.style.display = 'none';
+    selectBtns.forEach(btn => {
+      btn.disabled = false;
+      if (btn.dataset.originalHtml) {
+        btn.innerHTML = btn.dataset.originalHtml;
+      }
+    });
+    // Reset file input values so the same file can be re-uploaded
+    const fileInputs = [$('#fileUpload'), $('#htmlUpload')].filter(Boolean);
+    fileInputs.forEach(inp => { inp.value = ''; });
+  }
+}
+
+// ─── Attach File Chooser and Dropzone Listeners ─────────────────────
+const selectBtns = [$('#btnSelectFiles'), $('#btnUploadHtml')].filter(Boolean);
+const fileInputs = [$('#fileUpload'), $('#htmlUpload')].filter(Boolean);
+
+selectBtns.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const primaryInput = fileInputs[0];
+    primaryInput?.click();
+  });
+});
+
+fileInputs.forEach(input => {
+  input.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      await handleFiles(files);
+    }
+  });
+});
+
+// Dropzone drag-and-drop
+const dropZone = $('#dropZone');
+if (dropZone) {
+  let dragCounter = 0;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (eventName === 'dragenter') dragCounter++;
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+      dropZone.classList.add('drag-active');
+    });
+  });
+
+  ['dragleave', 'dragend'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        dropZone.classList.remove('drag-active');
+      }
+    });
+  });
+
+  dropZone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter = 0;
+    dropZone.classList.remove('drag-active');
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length > 0) {
+      await handleFiles(files);
+    }
+  });
+
+  // Clicking empty area inside dropzone opens file dialog
+  dropZone.addEventListener('click', (e) => {
+    if (e.target.closest('button, a, input, textarea, label')) return;
+    const primaryInput = fileInputs[0];
+    primaryInput?.click();
+  });
+}
+
+// Prevent browser from opening files dropped outside dropzone
+window.addEventListener('dragover', (e) => { e.preventDefault(); }, false);
+window.addEventListener('drop', (e) => { e.preventDefault(); }, false);
+
+// ─── Attach Paste Drawer Listeners ─────────────────────────────────
+const pasteToggle = $('#btnPasteToggle');
+const pasteContainer = $('#pasteContainer');
+const pasteInput = $('#pasteInput');
+const btnProcessPaste = $('#btnProcessPaste');
+
+if (pasteToggle && pasteContainer) {
+  pasteToggle.addEventListener('click', () => {
+    const isHidden = pasteContainer.style.display === 'none' || !pasteContainer.style.display;
+    pasteContainer.style.display = isHidden ? 'block' : 'none';
+    if (isHidden && pasteInput) {
+      pasteInput.focus();
+    }
+  });
+}
+
+if (btnProcessPaste && pasteInput) {
+  btnProcessPaste.addEventListener('click', async () => {
+    const text = pasteInput.value.trim();
+    if (!text) {
+      showToast('Please paste HTML source or JSON text first.', 'warning', 3500);
+      pasteInput.focus();
+      return;
+    }
+
+    btnProcessPaste.disabled = true;
+    btnProcessPaste.textContent = 'Processing...';
+
+    try {
+      const result = await parseCaseData(text, 'Pasted Content');
+      if (!result.cases || result.cases.length === 0) {
+        showToast('No case records found in the pasted content.', 'warning', 4000);
         return;
       }
-
-      showParityModal(incomingCases, searchContext, mergeMode);
+      const mergeMode = $('#chkMergeCases')?.checked ?? true;
+      showParityModal(result.cases, result.searchContext || 'Pasted MyCase Data', mergeMode);
     } catch (err) {
       showToast(err.message, 'error', 6000);
-      console.error('[Scanner] Upload parse error:', err);
+      console.error('[Scanner] Paste error:', err);
     } finally {
-      btnUploadHtml.disabled = false;
-      btnUploadHtml.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-        Upload Saved HTML or JSON File
-      `;
-      // Reset input so the same file can be uploaded again if needed
-      htmlUpload.value = '';
+      btnProcessPaste.disabled = false;
+      btnProcessPaste.textContent = 'Import Pasted Data';
     }
+  });
+}
+
+// ─── Attach Demo Cases Loader ──────────────────────────────────────
+const btnLoadDemo = $('#btnLoadDemo');
+if (btnLoadDemo) {
+  btnLoadDemo.addEventListener('click', () => {
+    const mergeMode = $('#chkMergeCases')?.checked ?? true;
+    showToast('Loaded demo cases across Marion & Hamilton counties.', 'info', 3000);
+    showParityModal(DEMO_CASES.map(c => ({ ...c })), 'Demo Cases (Marion & Hamilton County)', mergeMode);
   });
 }
 

@@ -222,7 +222,10 @@ const MyCaseScraper = (() => {
    * Extracts data from the rendered .result-row elements.
    */
   function tryScrapeDOM(rootElement = document) {
-    const rows = rootElement.querySelectorAll('tr.result-row');
+    let rows = rootElement.querySelectorAll('tr.result-row');
+    if (!rows || rows.length === 0) {
+      rows = rootElement.querySelectorAll('.result-row');
+    }
     const cases = [];
 
     rows.forEach((row, index) => {
@@ -607,7 +610,8 @@ const MyCaseScraper = (() => {
   function isSearchResultsPage(rootElement = document) {
     const isDoc = rootElement === document;
     return (isDoc && window.location.href.includes('SearchResults')) ||
-      rootElement.querySelector('tr.result-row') !== null;
+      rootElement.querySelector('tr.result-row') !== null ||
+      rootElement.querySelector('.result-row, [title="Case Number"], .result-title') !== null;
   }
 
   /**

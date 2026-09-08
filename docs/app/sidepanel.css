@@ -347,6 +347,7 @@ body {
   text-align: center;
   transition: all var(--transition);
   position: relative;
+  cursor: pointer;
 }
 
 .dropzone:hover,
